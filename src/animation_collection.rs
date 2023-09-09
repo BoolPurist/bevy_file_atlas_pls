@@ -4,9 +4,10 @@ use bevy::{prelude::Handle, sprite::TextureAtlas};
 
 use crate::{
     animation_altlas::AnimationAltlas,
+    animation_error::NotFoundError,
     animation_frames::AnimationFrames,
     animation_key::AnimationKey,
-    types::{AnimationIndex, AnimationSequence},
+    types::{AnimationIndex, AnimationSequence, ImmutableAnimationFrames},
 };
 
 #[derive(Debug)]
@@ -22,6 +23,15 @@ impl AnimationCollection {
     }
     pub fn frames(&self) -> &AnimationSequence {
         &self.frames
+    }
+    pub fn get_frames_under(
+        &self,
+        key: &AnimationKey,
+    ) -> Result<ImmutableAnimationFrames, NotFoundError> {
+        self.frames
+            .get(key)
+            .cloned()
+            .ok_or_else(|| NotFoundError::SingleAnimation(key.clone()))
     }
     pub fn set_frames(&mut self, new_seq: AnimationSequence) {
         self.frames = new_seq;
@@ -78,7 +88,7 @@ impl AnimationSequenceBuilder {
         meta: &AnimationAltlas,
     ) -> Self {
         let ani_key = AnimationKey::new(key);
-        let animation_frames = AnimationFrames::from_row(row, time, meta.data().columns());
+        let animation_frames = AnimationFrames::from_row(row, time, meta.data().columns()).unwrap();
         self.0.insert(ani_key, Arc::new(animation_frames));
         self
     }

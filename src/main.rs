@@ -58,8 +58,10 @@ fn setup_animated_sprites(
 ) {
     let skeleton_image = assets.skeleton_sprite.clone();
     let ani = animations.get(&assets.skeleton_animations).unwrap();
-    ani_respo.add_from_asset(ani, skeleton_image, &mut atlase_coll);
-    commands.spawn((ani_respo.create_sprite_comp(PLAYER_TAG), Player));
+    ani_respo
+        .add_from_asset(ani, skeleton_image, &mut atlase_coll)
+        .unwrap();
+    commands.spawn((ani_respo.create_sprite_comp(PLAYER_TAG).unwrap(), Player));
 }
 
 #[allow(dead_code)]

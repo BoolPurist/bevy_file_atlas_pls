@@ -223,6 +223,7 @@ dependencies = [
  "bevy_asset_loader",
  "bevy_common_assets",
  "serde",
+ "thiserror",
 ]
 
 [[package]]

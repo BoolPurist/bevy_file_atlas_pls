@@ -8,6 +8,7 @@ use crate::{
     animation_collection::{AnimationCollection, AnimationSequenceBuilder},
     animation_frames::AnimationFrames,
     prelude::{AnimationAltlasMeta, AnimationCollectionBuilder, AnimationIndex, AnimationSequence},
+    types::{AnimationFrameResult, AnimationResult},
 };
 #[derive(Deserialize)]
 pub struct FramesSerde {
@@ -23,7 +24,7 @@ impl FramesSerde {
     pub fn name(&self) -> &str {
         self.name.as_ref()
     }
-    pub fn to_animation_frames(&self, columns: AnimationIndex) -> AnimationFrames {
+    pub fn to_animation_frames(&self, columns: AnimationIndex) -> AnimationFrameResult {
         AnimationFrames::new(
             self.start_row,
             self.start_column,
@@ -50,7 +51,7 @@ impl AnimationAssets {
         &self,
         image: Handle<Image>,
         mut assets_atlas: &mut Assets<TextureAtlas>,
-    ) -> AnimationCollection {
+    ) -> AnimationResult<AnimationCollection> {
         let meta = self.general.clone().build(image, &mut assets_atlas);
         let mut collection = AnimationCollectionBuilder::new(meta);
         for (name, frames) in self.frames.iter().map(|to_split| {
@@ -59,12 +60,13 @@ impl AnimationAssets {
                 to_split.to_animation_frames(self.general.columns()),
             )
         }) {
-            collection = collection.add_animation(name, frames);
+            collection = collection.add_animation(name, frames?);
         }
-        collection.build(&self.start_state)
+
+        Ok(collection.build(&self.start_state))
     }
 
-    pub fn to_ani_seq(&self) -> AnimationSequence {
+    pub fn to_ani_seq(&self) -> AnimationResult<AnimationSequence> {
         let mut seq = AnimationSequenceBuilder::default();
         for (name, frames) in self.frames.iter().map(|to_split| {
             (
@@ -72,9 +74,9 @@ impl AnimationAssets {
                 to_split.to_animation_frames(self.general.columns()),
             )
         }) {
-            seq = seq.add_animation(name, frames);
+            seq = seq.add_animation(name, frames?);
         }
-        seq.build()
+        Ok(seq.build())
     }
 
     pub fn start_state(&self) -> &str {

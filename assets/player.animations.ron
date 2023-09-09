@@ -5,13 +5,13 @@
         (
             name: "Left",
             start_row: 1,
-            end_row: Some(1),
-            time_secs: 0.25,
+            time_secs: 0.5,
         ),
         (
             name: "Right",
-            start_row: 3,
-            time_secs: 1.0,
+            start_row: 2,
+            end_row: Some(1),
+            time_secs: 0.25,
         ),
         (
             name: "Top",

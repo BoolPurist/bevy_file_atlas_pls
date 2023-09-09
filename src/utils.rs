@@ -1,4 +1,7 @@
-use crate::{prelude::AnimationSequence, types::AnimationIndex};
+use bevy::prelude::*;
+use std::error::Error;
+
+use crate::types::AnimationIndex;
 
 pub fn index_from_row_column(
     row: AnimationIndex,
@@ -8,6 +11,12 @@ pub fn index_from_row_column(
     (row * columns) + column
 }
 
-pub fn get_all_state_names_from_seq(seq: &AnimationSequence) -> Vec<&str> {
-    seq.keys().map(|key| key.as_ref()).collect()
+pub fn log_if_error<E>(result: Result<(), E>, message: &str)
+where
+    E: Error,
+{
+    if let Err(error) = result {
+        error!("{}", message);
+        error!("Reason: {}", error);
+    }
 }

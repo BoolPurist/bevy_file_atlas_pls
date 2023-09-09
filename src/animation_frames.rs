@@ -1,4 +1,8 @@
-use crate::{types::AnimationIndex, utils};
+use crate::{
+    animation_error::AnimationFrameError,
+    types::{AnimationFrameResult, AnimationIndex},
+    utils,
+};
 
 #[derive(Debug, Clone)]
 pub struct AnimationFrames {
@@ -6,7 +10,6 @@ pub struct AnimationFrames {
     end: AnimationIndex,
     time: f32,
 }
-
 impl AnimationFrames {
     pub fn new(
         row: AnimationIndex,
@@ -15,7 +18,7 @@ impl AnimationFrames {
         end_column: Option<AnimationIndex>,
         time: f32,
         columns: AnimationIndex,
-    ) -> Self {
+    ) -> AnimationFrameResult {
         let (column, end_row, end_column) = (
             column.unwrap_or(0),
             end_row.unwrap_or(row),
@@ -23,10 +26,10 @@ impl AnimationFrames {
         );
 
         if row > end_row {
-            panic!(
-                "Starting row ({}) must not be smaller than the ending row ({}).",
-                row, end_row
-            );
+            return Err(AnimationFrameError::InvalidRows {
+                start: row,
+                end: end_row,
+            });
         }
 
         let (start, end) = (
@@ -35,15 +38,13 @@ impl AnimationFrames {
         );
 
         if start > end {
-            panic!(
-                "Start index ({}) must not be greater than the end index ({})",
-                start, end
-            );
+            return Err(AnimationFrameError::InvalidIndexes { start, end });
         }
-        Self { start, end, time }
+
+        Ok(Self { start, end, time })
     }
 
-    pub fn from_row(row: AnimationIndex, time: f32, columns: usize) -> Self {
+    pub fn from_row(row: AnimationIndex, time: f32, columns: usize) -> AnimationFrameResult {
         Self::new(row, None, None, None, time, columns)
     }
 
