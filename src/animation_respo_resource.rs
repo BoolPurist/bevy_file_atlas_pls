@@ -81,7 +81,7 @@ impl AllAnimationResource {
         asset_atlases: &mut Assets<TextureAtlas>,
     ) -> AnimationResult<&mut Self> {
         let collection = animations.to_animaton_collection(image, asset_atlases)?;
-        if let Some(_) = self.0.insert(key.clone(), collection) {
+        if self.0.insert(key.clone(), collection).is_some() {
             info!(
                 "New animations are added under existing key ({}) and overrides old animations",
                 key

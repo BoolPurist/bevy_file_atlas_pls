@@ -50,9 +50,9 @@ impl AnimationAssets {
     pub fn to_animaton_collection(
         &self,
         image: Handle<Image>,
-        mut assets_atlas: &mut Assets<TextureAtlas>,
+        assets_atlas: &mut Assets<TextureAtlas>,
     ) -> AnimationResult<AnimationCollection> {
-        let meta = self.general.clone().build(image, &mut assets_atlas);
+        let meta = self.general.clone().build(image, assets_atlas);
         let mut collection = AnimationCollectionBuilder::new(meta);
         for (name, frames) in self.frames.iter().map(|to_split| {
             (

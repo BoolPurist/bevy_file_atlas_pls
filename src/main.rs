@@ -15,7 +15,7 @@ fn main() {
                     ..Default::default()
                 })
                 .build(),
-            BoolAnimationPlugin::default(),
+            BoolAnimationPlugin,
         ))
         .add_state::<GameLoadingState>()
         .add_loading_state(

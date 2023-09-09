@@ -29,6 +29,7 @@ pub fn apply_pending_states(
     }
 }
 
+#[allow(clippy::single_match)]
 pub fn reload_animation_assets(
     assets_antimation: Res<Assets<AnimationAssets>>,
     mut asset_event: EventReader<AssetEvent<AnimationAssets>>,

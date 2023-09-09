@@ -38,9 +38,9 @@ impl AnimationComp {
         frames: &AnimationKey,
         current_state: &AnimationKey,
     ) -> KeyLookUpResult<ImmutableAnimationFrames> {
-        Ok(repos
+        repos
             .animation_under(frames)?
-            .get_frames_under(current_state)?)
+            .get_frames_under(current_state)
     }
 
     fn get_current_seq(
