@@ -1,7 +1,9 @@
-use bevy::{asset::ChangeWatcher, prelude::*};
+use bevy::{asset::ChangeWatcher, prelude::*, utils::petgraph::matrix_graph::Zero};
 use bevy_asset_loader::prelude::*;
 
 use bevy_file_atlas_pls::{prelude::*, save_load::AnimationAssets};
+
+pub const PLAYER_SPEED: f32 = 200.;
 
 fn main() {
     App::new()
@@ -88,19 +90,34 @@ fn setup(mut commands: Commands) {
 #[derive(Component)]
 pub struct Player;
 
-fn change_state_on_input(mut query: Query<&mut AnimationComp>, input: Res<Input<KeyCode>>) {
-    let mut animation = query.single_mut();
-    if input.just_pressed(KeyCode::A) {
+fn change_state_on_input(
+    mut query: Query<(&mut AnimationComp, &mut Transform), With<Player>>,
+    time: Res<Time>,
+    input: Res<Input<KeyCode>>,
+) {
+    let (mut animation, mut location) = query.single_mut();
+    let mut direction = Vec2::ZERO;
+    if input.pressed(KeyCode::A) {
         animation.change_state(AniStates::Left.into());
+        direction.x -= 1.;
     }
-    if input.just_pressed(KeyCode::D) {
+    if input.pressed(KeyCode::D) {
         animation.change_state(AniStates::Right.into());
+        direction.x += 1.;
     }
-    if input.just_pressed(KeyCode::W) {
+    if input.pressed(KeyCode::W) {
         animation.change_state(AniStates::Top.into());
+        direction.y += 1.;
     }
-    if input.just_pressed(KeyCode::S) {
+    if input.pressed(KeyCode::S) {
         animation.change_state(AniStates::Bottom.into());
+        direction.y -= 1.;
+    }
+    let movement = direction * time.delta_seconds() * PLAYER_SPEED;
+
+    location.translation += Vec3::new(movement.x, movement.y, 0.);
+    if direction.length().is_zero() {
+        animation.reset_current_state();
     }
 }
 

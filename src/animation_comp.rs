@@ -14,6 +14,7 @@ pub struct AnimationComp {
     all_frames: AnimationKey,
     current_state: AnimationKey,
     next_state: Option<AnimationKey>,
+    reset_state: bool,
 }
 
 impl AnimationComp {
@@ -30,6 +31,7 @@ impl AnimationComp {
             all_frames,
             current_state: start_state,
             next_state: None,
+            reset_state: false,
         })
     }
 
@@ -44,6 +46,15 @@ impl AnimationComp {
     }
 
     pub fn change_state(&mut self, key: &str) {
+        if key != self.current_state.as_ref() {
+            self.set_state(key);
+        }
+    }
+    pub fn reset_current_state(&mut self) {
+        self.reset_state = true;
+    }
+
+    pub fn set_state(&mut self, key: &str) {
         let new_key = AnimationKey::new(key);
         self.next_state = Some(new_key);
     }
@@ -88,6 +99,21 @@ impl AnimationComp {
             };
             self.frame_seq_duration = Self::new_time(new_time);
             to_adjust.index = start;
+        }
+        Ok(())
+    }
+
+    pub(crate) fn do_pending_reset(
+        &mut self,
+        to_adjust: &mut TextureAtlasSprite,
+        respo: &AllAnimationResource,
+    ) -> KeyLookUpResult {
+        if self.reset_state {
+            self.reset_state = false;
+            let current_animation =
+                Self::get_animation_seq(respo, &self.all_frames, &self.current_state)?;
+            to_adjust.index = current_animation.start();
+            self.frame_seq_duration.reset();
         }
         Ok(())
     }

@@ -4,7 +4,7 @@ use bevy_common_assets::ron::RonAssetPlugin;
 use crate::{
     animation_respo_resource::AllAnimationResource,
     save_load::AnimationAssets,
-    systems::{animate, apply_pending_states, reload_animation_assets},
+    systems::{animate, apply_pending_states, do_pending_resets, reload_animation_assets},
 };
 #[derive(Default)]
 pub struct BoolAnimationPlugin;
@@ -15,7 +15,12 @@ impl Plugin for BoolAnimationPlugin {
             .init_resource::<AllAnimationResource>()
             .add_systems(
                 Update,
-                (apply_pending_states, animate, reload_animation_assets),
+                (
+                    apply_pending_states,
+                    animate,
+                    reload_animation_assets,
+                    do_pending_resets,
+                ),
             );
     }
 }

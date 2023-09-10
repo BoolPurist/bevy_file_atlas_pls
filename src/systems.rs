@@ -28,6 +28,17 @@ pub fn apply_pending_states(
         );
     }
 }
+pub fn do_pending_resets(
+    mut query: Query<(&mut AnimationComp, &mut TextureAtlasSprite)>,
+    repos: Res<AllAnimationResource>,
+) {
+    for (mut animmator, mut texture_sprite) in query.iter_mut() {
+        utils::log_if_error(
+            animmator.do_pending_reset(&mut texture_sprite, &repos),
+            "Applying state reset for animation failed.",
+        );
+    }
+}
 
 #[allow(clippy::single_match)]
 pub fn reload_animation_assets(
