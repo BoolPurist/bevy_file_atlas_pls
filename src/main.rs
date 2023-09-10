@@ -1,7 +1,7 @@
 use bevy::{asset::ChangeWatcher, prelude::*};
 use bevy_asset_loader::prelude::*;
 
-use assets::{prelude::*, save_load::AnimationAssets};
+use bevy_file_atlas_pls::{prelude::*, save_load::AnimationAssets};
 
 fn main() {
     App::new()

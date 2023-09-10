@@ -1,5 +1,5 @@
 [package]
-name = "assets"
+name = "bevy_file_atlas_pls"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"

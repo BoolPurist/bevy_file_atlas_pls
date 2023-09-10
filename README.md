@@ -1,4 +1,4 @@
-# bevy_file_altas_pls
+# bevy_file_atlas_pls
 
 ## Toods
 
@@ -12,5 +12,8 @@
 - Event system: way to check if animaion ended.
 
 ## Maybes
+ 
 - Animation gui editor ?
+
+
 
