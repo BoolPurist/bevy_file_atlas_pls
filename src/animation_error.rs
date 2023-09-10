@@ -13,7 +13,7 @@ pub enum AnimationError {
 pub enum NotFoundError {
     #[error("There is no animation frequence for key the ({0})")]
     AnimationSequence(AnimationKey),
-    #[error("There is no animation frames for key the ({0})")]
+    #[error("There are no animation frames for key the ({0})")]
     SingleAnimation(AnimationKey),
 }
 

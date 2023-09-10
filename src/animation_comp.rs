@@ -43,19 +43,20 @@ impl AnimationComp {
             .get_frames_under(current_state)
     }
 
-    fn get_current_seq(
-        &self,
-        repos: &AllAnimationResource,
-    ) -> KeyLookUpResult<ImmutableAnimationFrames> {
-        Self::get_animation_seq(repos, &self.all_frames, &self.current_state)
+    pub fn change_state(&mut self, key: &str) {
+        let new_key = AnimationKey::new(key);
+        self.next_state = Some(new_key);
     }
 
-    pub fn start_index(&self, repos: &AllAnimationResource) -> KeyLookUpResult<AnimationIndex> {
+    pub(crate) fn start_index(
+        &self,
+        repos: &AllAnimationResource,
+    ) -> KeyLookUpResult<AnimationIndex> {
         let animation = self.get_current_seq(repos)?;
         Ok(animation.start())
     }
 
-    pub fn udpate(
+    pub(crate) fn udpate(
         &mut self,
         altlas_sprite: &mut TextureAtlasSprite,
         time: &Time,
@@ -74,12 +75,7 @@ impl AnimationComp {
         Ok(())
     }
 
-    pub fn change_state(&mut self, key: &str) {
-        let new_key = AnimationKey::new(key);
-        self.next_state = Some(new_key);
-    }
-
-    pub fn do_pending_change(
+    pub(crate) fn do_pending_change(
         &mut self,
         to_adjust: &mut TextureAtlasSprite,
         respo: &AllAnimationResource,
@@ -98,5 +94,12 @@ impl AnimationComp {
 
     fn new_time(time: f32) -> Timer {
         Timer::new(Duration::from_secs_f32(time), TimerMode::Repeating)
+    }
+
+    fn get_current_seq(
+        &self,
+        repos: &AllAnimationResource,
+    ) -> KeyLookUpResult<ImmutableAnimationFrames> {
+        Self::get_animation_seq(repos, &self.all_frames, &self.current_state)
     }
 }
