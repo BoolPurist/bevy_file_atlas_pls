@@ -13,7 +13,9 @@ pub struct AnimationComp {
     frame_seq_duration: Timer,
     all_frames: AnimationKey,
     current_state: AnimationKey,
-    next_state: Option<AnimationKey>,
+    // Box because only an individual component holds it. It is never cloned.
+    // Only there for the next frame so the system knows which one is the new state.
+    next_state: Option<Box<str>>,
     reset_state: bool,
 }
 
@@ -23,8 +25,9 @@ impl AnimationComp {
         start_state: AnimationKey,
         repos: &AllAnimationResource,
     ) -> Result<Self, NotFoundError> {
-        let duration_secs =
-            Self::get_animation_seq(repos, &all_frames, &start_state)?.time_per_frame();
+        let duration_secs = Self::get_animation_seq(repos, &all_frames, &start_state)?
+            .1
+            .time_per_frame();
         let frame_seq_duration = Self::new_time(duration_secs);
         Ok(Self {
             frame_seq_duration,
@@ -37,12 +40,12 @@ impl AnimationComp {
 
     fn get_animation_seq(
         repos: &AllAnimationResource,
-        frames: &AnimationKey,
-        current_state: &AnimationKey,
-    ) -> KeyLookUpResult<ImmutableAnimationFrames> {
+        frames: &str,
+        current_state: &str,
+    ) -> KeyLookUpResult<(AnimationKey, ImmutableAnimationFrames)> {
         repos
             .animation_under(frames)?
-            .get_frames_under(current_state)
+            .key_and_frames_under(&current_state)
     }
 
     pub fn change_state(&mut self, key: &str) {
@@ -55,8 +58,7 @@ impl AnimationComp {
     }
 
     pub fn set_state(&mut self, key: &str) {
-        let new_key = AnimationKey::new(key);
-        self.next_state = Some(new_key);
+        self.next_state = Some(Box::from(key));
     }
 
     pub(crate) fn start_index(
@@ -93,8 +95,8 @@ impl AnimationComp {
     ) -> KeyLookUpResult {
         if let Some(new) = self.next_state.take() {
             let (new_time, start) = {
-                let new_animation = Self::get_animation_seq(respo, &self.all_frames, &new)?;
-                self.current_state = new;
+                let (key, new_animation) = Self::get_animation_seq(respo, &self.all_frames, &new)?;
+                self.current_state = key;
                 (new_animation.time_per_frame(), new_animation.start())
             };
             self.frame_seq_duration = Self::new_time(new_time);
@@ -110,7 +112,7 @@ impl AnimationComp {
     ) -> KeyLookUpResult {
         if self.reset_state {
             self.reset_state = false;
-            let current_animation =
+            let (_, current_animation) =
                 Self::get_animation_seq(respo, &self.all_frames, &self.current_state)?;
             to_adjust.index = current_animation.start();
             self.frame_seq_duration.reset();
@@ -127,5 +129,6 @@ impl AnimationComp {
         repos: &AllAnimationResource,
     ) -> KeyLookUpResult<ImmutableAnimationFrames> {
         Self::get_animation_seq(repos, &self.all_frames, &self.current_state)
+            .map(|(_, value)| value)
     }
 }

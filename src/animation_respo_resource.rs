@@ -22,13 +22,10 @@ impl AllAnimationResource {
         self.0.insert(key, collection);
         self
     }
-    pub fn animation_under(
-        &self,
-        key: &AnimationKey,
-    ) -> Result<&AnimationCollection, NotFoundError> {
+    pub fn animation_under(&self, key: &str) -> Result<&AnimationCollection, NotFoundError> {
         self.0
             .get(key)
-            .ok_or_else(|| NotFoundError::AnimationSequence(key.clone()))
+            .ok_or_else(|| NotFoundError::AnimationSequence(key.into()))
     }
 
     pub fn add_from_asset(

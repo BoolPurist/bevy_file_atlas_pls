@@ -7,7 +7,7 @@ use crate::{
     animation_error::NotFoundError,
     animation_frames::AnimationFrames,
     animation_key::AnimationKey,
-    types::{AnimationIndex, AnimationSequence, ImmutableAnimationFrames},
+    types::{AnimationIndex, AnimationSequence, ImmutableAnimationFrames, KeyLookUpResult},
 };
 
 #[derive(Debug)]
@@ -21,24 +21,34 @@ impl AnimationCollection {
     pub fn atlas(&self) -> Handle<TextureAtlas> {
         self.meta.atlas()
     }
+
     pub fn frames(&self) -> &AnimationSequence {
         &self.frames
     }
-    pub fn get_frames_under(
-        &self,
-        key: &AnimationKey,
-    ) -> Result<ImmutableAnimationFrames, NotFoundError> {
+
+    pub fn get_frames_under(&self, key: &str) -> Result<ImmutableAnimationFrames, NotFoundError> {
         self.frames
             .get(key)
             .cloned()
-            .ok_or_else(|| NotFoundError::SingleAnimation(key.clone()))
+            .ok_or_else(|| NotFoundError::SingleAnimation(key.into()))
     }
+
     pub fn set_frames(&mut self, new_seq: AnimationSequence) {
         self.frames = new_seq;
     }
 
     pub fn start_state(&self) -> AnimationKey {
         self.start_state.clone()
+    }
+
+    pub(crate) fn key_and_frames_under(
+        &self,
+        key: &str,
+    ) -> KeyLookUpResult<(AnimationKey, ImmutableAnimationFrames)> {
+        self.frames()
+            .get_key_value(key)
+            .map(|(key, value)| (key.clone(), value.clone()))
+            .ok_or_else(|| NotFoundError::SingleAnimation(key.into()))
     }
 }
 #[derive(Debug)]
