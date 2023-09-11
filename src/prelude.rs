@@ -6,5 +6,6 @@ pub use crate::{
     animation_key::AnimationKey,
     animation_respo_resource::AllAnimationResource,
     bool_animation_plugin::BoolAnimationPlugin,
+    types::AnimationDuration,
     AnimationTimeScale, PosScaleFactor,
 };

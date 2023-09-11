@@ -16,3 +16,4 @@ pub type AnimationIndex = usize;
 pub type ImmutableAnimationFrames = Arc<AnimationFrames>;
 pub type AnimationSequence = HashMap<AnimationKey, ImmutableAnimationFrames>;
 pub type AnimationRepository = HashMap<AnimationKey, AnimationCollection>;
+pub type AnimationDuration = bevy::utils::Duration;

@@ -1,6 +1,6 @@
 use crate::{
     animation_error::AnimationFrameError,
-    types::{AnimationFrameResult, AnimationIndex},
+    types::{AnimationDuration, AnimationFrameResult, AnimationIndex},
     utils,
 };
 
@@ -8,7 +8,7 @@ use crate::{
 pub struct AnimationFrames {
     start: AnimationIndex,
     end: AnimationIndex,
-    time: f32,
+    time: AnimationDuration,
 }
 impl AnimationFrames {
     pub fn new(
@@ -16,7 +16,7 @@ impl AnimationFrames {
         column: Option<AnimationIndex>,
         end_row: Option<AnimationIndex>,
         end_column: Option<AnimationIndex>,
-        time: f32,
+        time: AnimationDuration,
         columns: AnimationIndex,
     ) -> AnimationFrameResult {
         let (column, end_row, end_column) = (
@@ -44,11 +44,15 @@ impl AnimationFrames {
         Ok(Self { start, end, time })
     }
 
-    pub fn from_row(row: AnimationIndex, time: f32, columns: usize) -> AnimationFrameResult {
+    pub fn from_row(
+        row: AnimationIndex,
+        time: AnimationDuration,
+        columns: usize,
+    ) -> AnimationFrameResult {
         Self::new(row, None, None, None, time, columns)
     }
 
-    pub fn time(&self) -> f32 {
+    pub fn time(&self) -> AnimationDuration {
         self.time
     }
 
@@ -60,8 +64,10 @@ impl AnimationFrames {
         self.end - self.start
     }
 
-    pub fn time_per_frame(&self) -> f32 {
-        self.time() / self.frame_gap() as f32
+    pub fn time_per_frame(&self) -> AnimationDuration {
+        let time_secs = self.time().as_secs_f32();
+        let secs = time_secs / self.frame_gap() as f32;
+        AnimationDuration::from_secs_f32(secs)
     }
 
     pub fn end(&self) -> usize {

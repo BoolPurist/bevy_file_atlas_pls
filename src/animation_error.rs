@@ -10,8 +10,14 @@ pub enum AnimationError {
     #[error("There was no key for an animaiton sequence provided.")]
     NoSeqeunceKeyProvided,
     #[error("Key {0} for an animation sequence was provided.")]
-    DuplicateSequenceProvided(AnimationKey),
+    DuplicateKeySequenceProvided(AnimationKey),
+    #[error("{0}")]
+    NegativeAnimationTime(#[from] NegativeAnimationTime),
 }
+
+#[derive(Debug, Error)]
+#[error("Animation time must not be negative. Actual: {0}")]
+pub struct NegativeAnimationTime(pub f32);
 
 #[derive(Debug, Error)]
 pub enum NotFoundError {

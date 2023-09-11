@@ -85,7 +85,7 @@ impl AllAnimationResource {
             .insert(key.clone(), collection)
             .is_some()
         {
-            return Err(AnimationError::DuplicateSequenceProvided(key));
+            return Err(AnimationError::DuplicateKeySequenceProvided(key));
         } else {
             info!("New animations are added under new key ({})", key)
         };

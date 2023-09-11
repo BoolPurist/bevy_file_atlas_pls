@@ -8,8 +8,8 @@ use crate::{
     animation_collection::{AnimationCollection, AnimationSequenceBuilder},
     animation_frames::AnimationFrames,
     prelude::{AnimationAltlasMeta, AnimationCollectionBuilder, AnimationIndex, AnimationSequence},
-    types::{AnimationFrameResult, AnimationResult},
-    PosScaleFactor,
+    types::AnimationResult,
+    utils, PosScaleFactor,
 };
 
 #[derive(Deserialize)]
@@ -30,22 +30,25 @@ impl FramesSerde {
         &self,
         sequence_meta: &AnimationAssets,
         default_ani_duration: PosScaleFactor,
-    ) -> AnimationFrameResult {
-        let time_secs = self.time_secs.unwrap_or(
-            sequence_meta
-                .time()
-                .unwrap_or(default_ani_duration.to_f32()),
-        );
+    ) -> AnimationResult<AnimationFrames> {
+        let time_secs = {
+            let raw = self.time_secs.unwrap_or(
+                sequence_meta
+                    .time()
+                    .unwrap_or(default_ani_duration.to_f32()),
+            );
+            utils::f32_to_animation_duration(raw)
+        }?;
 
         let columns = sequence_meta.columns();
-        AnimationFrames::new(
+        Ok(AnimationFrames::new(
             self.start_row,
             self.start_column,
             self.end_row,
             self.end_column,
             time_secs,
             columns,
-        )
+        )?)
     }
 }
 

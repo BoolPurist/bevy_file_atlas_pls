@@ -47,13 +47,13 @@ pub fn animate(
         let scaled_time = time_scale.scale_duration(time.delta());
 
         if animmtor
-            .frame_seq_duration
+            .duration_for_animation
             .tick(scaled_time)
             .just_finished()
         {
             let next = altlas_sprite.index + 1;
             let current_animation = animmtor.get_current_seq(repos)?;
-            animmtor.frame_seq_duration =
+            animmtor.duration_for_animation =
                 crate::animation_comp::new_reapting_time(current_animation.time());
             altlas_sprite.index = if next > current_animation.end() {
                 current_animation.start()
@@ -83,11 +83,11 @@ pub fn apply_pending_states(
     ) -> AnimationResult {
         if let Some(new) = animator.next_state.take() {
             let (new_time, start) = {
-                let (key, new_animation) = get_animation_seq(respo, &animator.all_frames, &new)?;
+                let (key, new_animation) = get_animation_seq(respo, &animator.sequence, &new)?;
                 animator.current_state = key;
                 (new_animation.time_per_frame(), new_animation.start())
             };
-            animator.frame_seq_duration = new_reapting_time(new_time);
+            animator.duration_for_animation = new_reapting_time(new_time);
             to_adjust.index = start;
         }
         Ok(())
@@ -111,7 +111,7 @@ pub fn do_pending_resets(
             animator.reset_state = false;
             let current_animation = animator.get_current_seq(&repos)?;
             texture_sprite.index = current_animation.start();
-            animator.frame_seq_duration.reset();
+            animator.duration_for_animation.reset();
         }
         Ok(())
     }

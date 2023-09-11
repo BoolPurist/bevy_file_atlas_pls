@@ -1,19 +1,18 @@
 use bevy::prelude::*;
-use bevy::utils::Duration;
 
 use crate::{
     animation_error::NotFoundError,
     animation_key::AnimationKey,
     prelude::{AllAnimationResource, ImmutableAnimationFrames},
-    types::{AnimationIndex, KeyLookUpResult},
+    types::{AnimationDuration, AnimationIndex, KeyLookUpResult},
 };
 
 #[derive(Component, Debug)]
 pub struct AnimationComp {
-    pub all_frames: AnimationKey,
-    pub current_state: AnimationKey,
-    pub reset_state: bool,
-    pub(crate) frame_seq_duration: Timer,
+    pub(crate) sequence: AnimationKey,
+    pub(crate) current_state: AnimationKey,
+    pub(crate) reset_state: bool,
+    pub(crate) duration_for_animation: Timer,
     // Box because only an individual component holds it. It is never cloned.
     // Only there for the next frame so the system knows which one is the new state.
     pub(crate) next_state: Option<Box<str>>,
@@ -30,16 +29,12 @@ impl AnimationComp {
             .time_per_frame();
         let frame_seq_duration = new_reapting_time(duration_secs);
         Ok(Self {
-            frame_seq_duration,
-            all_frames,
+            duration_for_animation: frame_seq_duration,
+            sequence: all_frames,
             current_state: start_state,
             next_state: None,
             reset_state: false,
         })
-    }
-
-    pub fn current_state(&self) -> &str {
-        &self.current_state
     }
 
     pub fn set_state(&mut self, key: &str) {
@@ -65,12 +60,28 @@ impl AnimationComp {
         &self,
         repos: &AllAnimationResource,
     ) -> KeyLookUpResult<ImmutableAnimationFrames> {
-        get_animation_seq(repos, &self.all_frames, &self.current_state).map(|(_, value)| value)
+        get_animation_seq(repos, &self.sequence, &self.current_state).map(|(_, value)| value)
+    }
+
+    pub fn sequence(&self) -> &str {
+        self.sequence.as_ref()
+    }
+
+    pub fn current_state(&self) -> &str {
+        self.current_state.as_ref()
+    }
+
+    pub fn duration_for_animation(&self) -> Timer {
+        self.duration_for_animation.clone()
+    }
+
+    pub fn get_reset_state(&self) -> bool {
+        self.reset_state
     }
 }
 
-pub(crate) fn new_reapting_time(time: f32) -> Timer {
-    Timer::new(Duration::from_secs_f32(time), TimerMode::Repeating)
+pub(crate) fn new_reapting_time(time: AnimationDuration) -> Timer {
+    Timer::new(time, TimerMode::Repeating)
 }
 
 pub(crate) fn get_animation_seq(

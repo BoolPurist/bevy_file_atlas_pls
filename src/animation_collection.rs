@@ -7,7 +7,10 @@ use crate::{
     animation_error::NotFoundError,
     animation_frames::AnimationFrames,
     animation_key::AnimationKey,
-    types::{AnimationIndex, AnimationSequence, ImmutableAnimationFrames, KeyLookUpResult},
+    types::{
+        AnimationDuration, AnimationIndex, AnimationSequence, ImmutableAnimationFrames,
+        KeyLookUpResult,
+    },
 };
 
 #[derive(Debug)]
@@ -68,7 +71,7 @@ impl AnimationCollectionBuilder {
         self.frames = self.frames.add_animation(key, frames);
         self
     }
-    pub fn add_row_ani(mut self, key: &str, row: AnimationIndex, time: f32) -> Self {
+    pub fn add_row_ani(mut self, key: &str, row: AnimationIndex, time: AnimationDuration) -> Self {
         self.frames = self.frames.add_row_ani(key, row, time, &self.meta);
         self
     }
@@ -94,7 +97,7 @@ impl AnimationSequenceBuilder {
         mut self,
         key: &str,
         row: AnimationIndex,
-        time: f32,
+        time: AnimationDuration,
         meta: &AnimationAltlas,
     ) -> Self {
         let ani_key = AnimationKey::new(key);

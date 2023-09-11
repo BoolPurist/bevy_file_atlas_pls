@@ -1,10 +1,14 @@
 {
     init_name: Some("player"),
     start_state: "Left",
+    // This duration for an animation is used if an animation has no own animation duration (times_secs)
+    time_secs: Some(0.25),
     frames: [
         (
             name: "Left",
             start_row: 1,
+            // Can override duration for a singel animation by:
+            // time_secs: Some(1)
         ),
         (
             name: "Right",
