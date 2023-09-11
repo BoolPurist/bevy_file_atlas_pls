@@ -5,4 +5,5 @@ pub use crate::{
     animation_comp::AnimationComp,
     animation_respo_resource::AllAnimationResource,
     bool_animation_plugin::BoolAnimationPlugin,
+    AnimationTimeScale, PosScaleFactor,
 };

@@ -9,9 +9,25 @@ authors = ["BoolPurist"]
 
 [dependencies]
 bevy = { version = "0.11", features = ["dynamic_linking"] }
-bevy_common_assets = { version = "0.7.0", features = ["ron"] }
-serde = { version = "1.0.188", features = ["derive"] }
 thiserror = "1.0.48"
+serde = { version = "1.0.188", features = ["derive"], optional = true }
+bevy_common_assets = { version = "0.7.0", features = ["ron"], optional = true }
+bevy-inspector-egui = { version = "0.19.0", optional = true }
+
+[dependencies.derive_more]
+version = "0.99.0"
+default-features = false
+features = [
+  "deref",
+  "as_ref",
+  "display",
+  "into",
+  "from",
+  "add",
+  "add_assign",
+  "mul",
+  "mul_assign",
+]
 # Enable a small amount of optimization in debug mode
 
 [profile.dev]
@@ -23,6 +39,11 @@ opt-level = 3
 
 [dev-dependencies]
 bevy_asset_loader = { version = "0.17.0", features = ["2d"] }
+
+[features]
+default = ["bevy_inspect", "assets"]
+bevy_inspect = ["dep:bevy-inspector-egui"]
+assets = ["dep:bevy_common_assets", "dep:serde"]
 
 [[example]]
 name = "moving_skeleton"

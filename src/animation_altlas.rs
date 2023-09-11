@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+#[cfg(feature = "assets")]
 use serde::Deserialize;
 
 use crate::types::AnimationIndex;
@@ -18,7 +19,8 @@ impl AnimationAltlas {
     }
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "assets", derive(Deserialize))]
 pub struct AnimationAltlasMeta {
     rows: AnimationIndex,
     columns: AnimationIndex,

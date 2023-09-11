@@ -1,9 +1,15 @@
-use bevy::{asset::ChangeWatcher, prelude::*, utils::petgraph::matrix_graph::Zero};
+use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
+use bevy::{asset::ChangeWatcher, utils::petgraph::matrix_graph::Zero};
 use bevy_asset_loader::prelude::*;
+use bevy_inspector_egui::bevy_egui::EguiContext;
+use bevy_inspector_egui::egui::Ui;
+use bevy_inspector_egui::{egui, DefaultInspectorConfigPlugin};
 
 use bevy_file_atlas_pls::{prelude::*, save_load::AnimationAssets};
+use bevy_inspector_egui::bevy_egui::EguiPlugin;
 
-pub const PLAYER_TAG: &str = "playerxxx";
+pub const PLAYER_TAG: &str = "player";
 pub const PLAYER_SPEED: f32 = 200.;
 
 fn main() {
@@ -15,6 +21,9 @@ fn change_state_on_input(
     time: Res<Time>,
     input: Res<Input<KeyCode>>,
 ) {
+    if time.is_paused() {
+        return;
+    }
     let (mut animation, mut location) = query.single_mut();
     let mut direction = Vec2::ZERO;
     if input.pressed(KeyCode::A) {
@@ -80,7 +89,11 @@ fn setup_animated_sprites(
             Some(PLAYER_TAG),
         )
         .unwrap();
-    commands.spawn((ani_respo.create_sprite_comp(PLAYER_TAG).unwrap(), Player));
+    commands.spawn((
+        ani_respo.create_sprite_comp(PLAYER_TAG).unwrap(),
+        Player,
+        Name::new(PLAYER_TAG),
+    ));
 }
 
 fn setup_app() {
@@ -96,8 +109,11 @@ fn setup_app() {
                 })
                 .build(),
             BoolAnimationPlugin,
+            EguiPlugin,
+            DefaultInspectorConfigPlugin,
         ))
         .add_state::<GameLoadingState>()
+        .init_resource::<TimeScaleIncrement>()
         .add_loading_state(
             LoadingState::new(GameLoadingState::Loading).continue_to_state(GameLoadingState::Done),
         )
@@ -105,7 +121,13 @@ fn setup_app() {
         .add_systems(OnEnter(GameLoadingState::Done), setup_animated_sprites)
         .add_systems(
             Update,
-            (print_player_animation_status(1.), change_state_on_input)
+            (
+                print_player_animation_status(1.),
+                change_state_on_input,
+                scale_animation_factor(0.25),
+                pause_game(0.5),
+                ui_dump_show,
+            )
                 .run_if(in_state(GameLoadingState::Done)),
         )
         .run();
@@ -125,6 +147,99 @@ fn print_player_animation_status(
     }
 }
 
+fn scale_animation_factor(
+    cooldown: f32,
+) -> impl FnMut(
+    Query<&mut AnimationTimeScale, With<Player>>,
+    Res<Input<KeyCode>>,
+    Res<Time>,
+    Res<TimeScaleIncrement>,
+) {
+    let mut timer = Timer::new(
+        bevy::utils::Duration::from_secs_f32(cooldown),
+        TimerMode::Once,
+    );
+    move |mut query, input, time, scale_increment| {
+        timer.tick(time.delta());
+        let pressed_shift = input.pressed(KeyCode::ShiftLeft) || input.pressed(KeyCode::ShiftRight);
+        let pressed_space = input.pressed(KeyCode::Space);
+        if pressed_space {
+            if !timer.finished() {
+                return;
+            }
+            timer.reset();
+            let mut player = query.single_mut();
+            let current = &mut player.0;
+
+            if pressed_shift {
+                *current -= scale_increment.0;
+            } else {
+                *current += scale_increment.0;
+            }
+            info!("New current time factor ({}) for player animation", current);
+        }
+    }
+}
+
+fn pause_game(cooldown: f32) -> impl FnMut(Res<Input<KeyCode>>, ResMut<Time>) {
+    let mut timer = Timer::new(
+        bevy::utils::Duration::from_secs_f32(cooldown),
+        TimerMode::Once,
+    );
+    move |input, mut time| {
+        timer.tick(time.delta());
+        if input.just_pressed(KeyCode::P) {
+            if !timer.finished() {
+                return;
+            }
+            if time.is_paused() {
+                time.unpause();
+                info!("Unpaused");
+            } else {
+                info!("Paused");
+                time.pause();
+            }
+        }
+    }
+}
+
+fn ui_dump_show(world: &mut World) {
+    let mut egui_context = world
+        .query_filtered::<&mut EguiContext, With<PrimaryWindow>>()
+        .single(world)
+        .clone();
+
+    egui::Window::new("UI").show(egui_context.get_mut(), |ui| {
+        bevy_inspector_egui::bevy_inspector::ui_for_world(world, ui);
+        ui.add_space(10.);
+        ui.separator();
+        ui.add_space(10.);
+        egui::ScrollArea::vertical().show(ui, |ui| {
+            ui.heading("Relevant values");
+            ui.add_space(10.);
+            ui.separator();
+            ui.add_space(10.);
+            show_time(world, ui);
+        });
+    });
+
+    fn show_time(world: &mut World, ui: &mut Ui) {
+        let mut time = world.resource_mut::<Time>();
+        let paused = &mut time.is_paused();
+        ui.checkbox(paused, "Paused");
+        set_paused(&mut time, *paused)
+    }
+}
+
+#[derive(Debug, Resource)]
+pub struct TimeScaleIncrement(pub PosScaleFactor);
+
+impl Default for TimeScaleIncrement {
+    fn default() -> Self {
+        Self(PosScaleFactor::at_least_zero(0.1))
+    }
+}
+
 #[derive(Resource, AssetCollection)]
 pub struct GameAssets {
     #[asset(path = "BODY_skeleton.png")]
@@ -138,4 +253,12 @@ pub enum GameLoadingState {
     #[default]
     Loading,
     Done,
+}
+
+fn set_paused(time: &mut Time, paused: bool) {
+    if paused {
+        time.pause();
+    } else {
+        time.unpause();
+    }
 }

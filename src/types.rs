@@ -10,7 +10,7 @@ use crate::{
 };
 
 pub type AnimationFrameResult = Result<AnimationFrames, AnimationFrameError>;
-pub type AnimationResult<T> = Result<T, AnimationError>;
+pub type AnimationResult<T = ()> = Result<T, AnimationError>;
 pub type KeyLookUpResult<T = ()> = Result<T, NotFoundError>;
 pub type AnimationIndex = usize;
 pub type ImmutableAnimationFrames = Arc<AnimationFrames>;

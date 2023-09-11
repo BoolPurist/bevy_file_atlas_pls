@@ -10,6 +10,7 @@ use crate::{
     prelude::{AnimationAltlasMeta, AnimationCollectionBuilder, AnimationIndex, AnimationSequence},
     types::{AnimationFrameResult, AnimationResult},
 };
+
 #[derive(Deserialize)]
 pub struct FramesSerde {
     name: String,

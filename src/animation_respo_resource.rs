@@ -1,18 +1,23 @@
 use crate::{
     animation_collection::AnimationCollection,
     animation_comp::AnimationComp,
-    animation_error::{AnimationError, NotFoundError},
+    animation_error::NotFoundError,
     animation_key::AnimationKey,
-    save_load::AnimationAssets,
     sprite_animation_bundle::SpriteAnimationBundle,
-    types::{AnimationRepository, AnimationResult, KeyLookUpResult},
+    types::{AnimationRepository, KeyLookUpResult},
 };
 
-use bevy::{prelude::*, utils::HashMap};
+use bevy::prelude::*;
+
+#[cfg(feature = "assets")]
+use crate::{animation_error::AnimationError, save_load::AnimationAssets, types::AnimationResult};
+#[cfg(feature = "assets")]
+use bevy::utils::HashMap;
 
 #[derive(Resource, Default)]
 pub struct AllAnimationResource {
     animation_seqs: AnimationRepository,
+    #[cfg(feature = "assets")]
     handle_to_key: HashMap<Handle<AnimationAssets>, AnimationKey>,
 }
 
@@ -31,6 +36,46 @@ impl AllAnimationResource {
             .ok_or_else(|| NotFoundError::AnimationSequence(key.into()))
     }
 
+    pub fn create_sprite_comp(&self, key: &str) -> KeyLookUpResult<SpriteAnimationBundle> {
+        let (key, animations) = self
+            .animation_seqs
+            .get_key_value(key)
+            .ok_or_else(|| NotFoundError::AnimationSequence(key.into()))?;
+        let frames = AnimationComp::new(key.clone(), animations.start_state(), self)?;
+        let sprite_sheet = SpriteSheetBundle {
+            texture_atlas: animations.atlas(),
+            sprite: TextureAtlasSprite::new(frames.start_index(self)?),
+            ..default()
+        };
+        Ok(SpriteAnimationBundle {
+            sprite_sheet,
+            time_scale: Default::default(),
+            frames,
+        })
+    }
+
+    #[cfg(feature = "assets")]
+    fn inner_add_from_asset(
+        &mut self,
+        key: AnimationKey,
+        animations: &AnimationAssets,
+        image: Handle<Image>,
+        asset_atlases: &mut Assets<TextureAtlas>,
+    ) -> AnimationResult<&mut Self> {
+        let collection = animations.to_animaton_collection(image, asset_atlases)?;
+        if self
+            .animation_seqs
+            .insert(key.clone(), collection)
+            .is_some()
+        {
+            return Err(AnimationError::DuplicateSequenceProvided(key));
+        } else {
+            info!("New animations are added under new key ({})", key)
+        };
+        Ok(self)
+    }
+
+    #[cfg(feature = "assets")]
     pub fn add_from_asset(
         &mut self,
         animations: Handle<AnimationAssets>,
@@ -57,6 +102,7 @@ impl AllAnimationResource {
         Ok(self)
     }
 
+    #[cfg(feature = "assets")]
     pub fn replace_from_assets(
         &mut self,
         animations: &Handle<AnimationAssets>,
@@ -72,43 +118,6 @@ impl AllAnimationResource {
             .ok_or_else(|| NotFoundError::AnimationSequence(name.clone()))?;
         let new_seq = animations_loaded.to_ani_seq()?;
         to_change.set_frames(new_seq);
-        Ok(self)
-    }
-
-    pub fn create_sprite_comp(&self, key: &str) -> KeyLookUpResult<SpriteAnimationBundle> {
-        let (key, animations) = self
-            .animation_seqs
-            .get_key_value(key)
-            .ok_or_else(|| NotFoundError::AnimationSequence(key.into()))?;
-        let frames = AnimationComp::new(key.clone(), animations.start_state(), self)?;
-        let sprite_sheet = SpriteSheetBundle {
-            texture_atlas: animations.atlas(),
-            sprite: TextureAtlasSprite::new(frames.start_index(self)?),
-            ..default()
-        };
-        Ok(SpriteAnimationBundle {
-            sprite_sheet,
-            frames,
-        })
-    }
-
-    fn inner_add_from_asset(
-        &mut self,
-        key: AnimationKey,
-        animations: &AnimationAssets,
-        image: Handle<Image>,
-        asset_atlases: &mut Assets<TextureAtlas>,
-    ) -> AnimationResult<&mut Self> {
-        let collection = animations.to_animaton_collection(image, asset_atlases)?;
-        if self
-            .animation_seqs
-            .insert(key.clone(), collection)
-            .is_some()
-        {
-            return Err(AnimationError::DuplicateSequenceProvided(key));
-        } else {
-            info!("New animations are added under new key ({})", key)
-        };
         Ok(self)
     }
 }
