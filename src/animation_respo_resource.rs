@@ -5,6 +5,7 @@ use crate::{
     animation_key::AnimationKey,
     sprite_animation_bundle::SpriteAnimationBundle,
     types::{AnimationRepository, KeyLookUpResult},
+    PosScaleFactor,
 };
 
 use bevy::prelude::*;
@@ -19,12 +20,24 @@ pub struct AllAnimationResource {
     animation_seqs: AnimationRepository,
     #[cfg(feature = "assets")]
     handle_to_key: HashMap<Handle<AnimationAssets>, AnimationKey>,
+    global_animation_duration: PosScaleFactor,
 }
 
 impl AllAnimationResource {
-    pub fn state_names_under(&self, key: &str) -> &AnimationCollection {
+    pub fn set_global_animation_duration(&mut self, global_animation_duration: PosScaleFactor) {
+        self.global_animation_duration = global_animation_duration;
+    }
+
+    pub fn state_names_under(&self, key: &str) -> impl Iterator<Item = &str> + '_ {
+        self.animation_sequence(key)
+            .frames()
+            .keys()
+            .map(|frame| frame.as_ref())
+    }
+    pub fn animation_sequence(&self, key: &str) -> &AnimationCollection {
         self.animation_seqs.get(key).unwrap()
     }
+
     pub fn add_animations(&mut self, key: &str, collection: AnimationCollection) -> &mut Self {
         let key = AnimationKey::new(key);
         self.animation_seqs.insert(key, collection);
@@ -62,7 +75,11 @@ impl AllAnimationResource {
         image: Handle<Image>,
         asset_atlases: &mut Assets<TextureAtlas>,
     ) -> AnimationResult<&mut Self> {
-        let collection = animations.to_animaton_collection(image, asset_atlases)?;
+        let collection = animations.to_animaton_collection(
+            image,
+            asset_atlases,
+            self.global_animation_duration,
+        )?;
         if self
             .animation_seqs
             .insert(key.clone(), collection)
@@ -112,11 +129,12 @@ impl AllAnimationResource {
             return Ok(self);
         };
         let name = self.handle_to_key.get(animations).unwrap();
+
         let to_change = self
             .animation_seqs
             .get_mut(name)
             .ok_or_else(|| NotFoundError::AnimationSequence(name.clone()))?;
-        let new_seq = animations_loaded.to_ani_seq()?;
+        let new_seq = animations_loaded.to_ani_seq(self.global_animation_duration)?;
         to_change.set_frames(new_seq);
         Ok(self)
     }

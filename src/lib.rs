@@ -18,5 +18,5 @@ pub mod types;
 
 pub use animation_time_factor::AnimationTimeScale;
 pub use pos_scale_factor::PosScaleFactor;
-pub(crate) mod animation_key;
+pub mod animation_key;
 pub(crate) mod utils;

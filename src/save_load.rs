@@ -9,6 +9,7 @@ use crate::{
     animation_frames::AnimationFrames,
     prelude::{AnimationAltlasMeta, AnimationCollectionBuilder, AnimationIndex, AnimationSequence},
     types::{AnimationFrameResult, AnimationResult},
+    PosScaleFactor,
 };
 
 #[derive(Deserialize)]
@@ -18,20 +19,31 @@ pub struct FramesSerde {
     start_column: Option<usize>,
     end_row: Option<usize>,
     end_column: Option<usize>,
-    time_secs: f32,
+    time_secs: Option<f32>,
 }
 
 impl FramesSerde {
     pub fn name(&self) -> &str {
         self.name.as_ref()
     }
-    pub fn to_animation_frames(&self, columns: AnimationIndex) -> AnimationFrameResult {
+    pub fn to_animation_frames(
+        &self,
+        sequence_meta: &AnimationAssets,
+        default_ani_duration: PosScaleFactor,
+    ) -> AnimationFrameResult {
+        let time_secs = self.time_secs.unwrap_or(
+            sequence_meta
+                .time()
+                .unwrap_or(default_ani_duration.to_f32()),
+        );
+
+        let columns = sequence_meta.columns();
         AnimationFrames::new(
             self.start_row,
             self.start_column,
             self.end_row,
             self.end_column,
-            self.time_secs,
+            time_secs,
             columns,
         )
     }
@@ -43,6 +55,7 @@ pub struct AnimationAssets {
     init_name: Option<String>,
     start_state: String,
     frames: Vec<FramesSerde>,
+    time_secs: Option<f32>,
     #[serde(flatten)]
     general: AnimationAltlasMeta,
 }
@@ -52,13 +65,14 @@ impl AnimationAssets {
         &self,
         image: Handle<Image>,
         assets_atlas: &mut Assets<TextureAtlas>,
+        default_ani_duration: PosScaleFactor,
     ) -> AnimationResult<AnimationCollection> {
         let meta = self.general.clone().build(image, assets_atlas);
         let mut collection = AnimationCollectionBuilder::new(meta);
         for (name, frames) in self.frames.iter().map(|to_split| {
             (
                 to_split.name(),
-                to_split.to_animation_frames(self.general.columns()),
+                to_split.to_animation_frames(self, default_ani_duration),
             )
         }) {
             collection = collection.add_animation(name, frames?);
@@ -67,12 +81,15 @@ impl AnimationAssets {
         Ok(collection.build(&self.start_state))
     }
 
-    pub fn to_ani_seq(&self) -> AnimationResult<AnimationSequence> {
+    pub fn to_ani_seq(
+        &self,
+        default_ani_duration: PosScaleFactor,
+    ) -> AnimationResult<AnimationSequence> {
         let mut seq = AnimationSequenceBuilder::default();
         for (name, frames) in self.frames.iter().map(|to_split| {
             (
                 to_split.name(),
-                to_split.to_animation_frames(self.general.columns()),
+                to_split.to_animation_frames(self, default_ani_duration),
             )
         }) {
             seq = seq.add_animation(name, frames?);
@@ -86,5 +103,13 @@ impl AnimationAssets {
 
     pub fn name(&self) -> Option<&str> {
         self.init_name.as_deref()
+    }
+
+    pub fn columns(&self) -> AnimationIndex {
+        self.general.columns()
+    }
+
+    pub fn time(&self) -> Option<f32> {
+        self.time_secs
     }
 }
