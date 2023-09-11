@@ -49,13 +49,11 @@ pub fn reload_animation_assets(
     for event in asset_event.iter() {
         match event {
             AssetEvent::Modified { handle } => {
-                if let Some(animations) = assets_antimation.get(handle) {
-                    if let Err(error) = repository.replace_from_assets(animations) {
-                        error!(
-                            "Changes from animation assets not applied, due to error.\nDetails: {}",
-                            error
-                        )
-                    }
+                if let Err(error) = repository.replace_from_assets(handle, &assets_antimation) {
+                    error!(
+                        "Changes from animation assets not applied, due to error.\nDetails: {}",
+                        error
+                    )
                 }
             }
             _ => (),

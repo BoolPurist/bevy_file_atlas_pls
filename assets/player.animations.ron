@@ -1,5 +1,5 @@
 {
-    name: "player",
+    init_name: Some("player"),
     start_state: "Left",
     frames: [
         (

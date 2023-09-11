@@ -7,6 +7,10 @@ pub enum AnimationError {
     InvalidFrames(#[from] AnimationFrameError),
     #[error("{0}")]
     NotFound(#[from] NotFoundError),
+    #[error("There was no key for an animaiton sequence provided.")]
+    NoSeqeunceKeyProvided,
+    #[error("Key {0} for an animation sequence was provided.")]
+    DuplicateSequenceProvided(AnimationKey),
 }
 
 #[derive(Debug, Error)]

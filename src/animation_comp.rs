@@ -38,14 +38,8 @@ impl AnimationComp {
         })
     }
 
-    fn get_animation_seq(
-        repos: &AllAnimationResource,
-        frames: &str,
-        current_state: &str,
-    ) -> KeyLookUpResult<(AnimationKey, ImmutableAnimationFrames)> {
-        repos
-            .animation_under(frames)?
-            .key_and_frames_under(&current_state)
+    pub fn current_state(&self) -> &str {
+        &self.current_state
     }
 
     pub fn change_state(&mut self, key: &str) {
@@ -53,6 +47,7 @@ impl AnimationComp {
             self.set_state(key);
         }
     }
+
     pub fn reset_current_state(&mut self) {
         self.reset_state = true;
     }
@@ -118,6 +113,16 @@ impl AnimationComp {
             self.frame_seq_duration.reset();
         }
         Ok(())
+    }
+
+    fn get_animation_seq(
+        repos: &AllAnimationResource,
+        frames: &str,
+        current_state: &str,
+    ) -> KeyLookUpResult<(AnimationKey, ImmutableAnimationFrames)> {
+        repos
+            .animation_under(frames)?
+            .key_and_frames_under(&current_state)
     }
 
     fn new_time(time: f32) -> Timer {

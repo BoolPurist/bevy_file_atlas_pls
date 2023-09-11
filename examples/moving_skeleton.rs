@@ -3,7 +3,7 @@ use bevy_asset_loader::prelude::*;
 
 use bevy_file_atlas_pls::{prelude::*, save_load::AnimationAssets};
 
-pub const PLAYER_TAG: &str = "player";
+pub const PLAYER_TAG: &str = "playerxxx";
 pub const PLAYER_SPEED: f32 = 200.;
 
 fn main() {
@@ -71,9 +71,14 @@ fn setup_animated_sprites(
 ) {
     commands.spawn(Camera2dBundle::default());
     let skeleton_image = assets.skeleton_sprite.clone();
-    let ani = animations.get(&assets.skeleton_animations).unwrap();
     ani_respo
-        .add_from_asset(ani, skeleton_image, &mut atlase_coll)
+        .add_from_asset(
+            assets.skeleton_animations.clone(),
+            skeleton_image,
+            &mut atlase_coll,
+            &animations,
+            Some(PLAYER_TAG),
+        )
         .unwrap();
     commands.spawn((ani_respo.create_sprite_comp(PLAYER_TAG).unwrap(), Player));
 }
@@ -100,9 +105,24 @@ fn setup_app() {
         .add_systems(OnEnter(GameLoadingState::Done), setup_animated_sprites)
         .add_systems(
             Update,
-            change_state_on_input.run_if(in_state(GameLoadingState::Done)),
+            (print_player_animation_status(1.), change_state_on_input)
+                .run_if(in_state(GameLoadingState::Done)),
         )
         .run();
+}
+
+fn print_player_animation_status(
+    interval_secs: f32,
+) -> impl FnMut(Res<Time>, Query<&AnimationComp, With<Player>>) {
+    use bevy::utils::Duration;
+    let mut timer = Timer::new(Duration::from_secs_f32(interval_secs), TimerMode::Repeating);
+    move |time, query| {
+        if timer.tick(time.delta()).just_finished() {
+            if let Ok(state) = query.get_single() {
+                println!("Current state of player: {}", state.current_state())
+            }
+        }
+    }
 }
 
 #[derive(Resource, AssetCollection)]

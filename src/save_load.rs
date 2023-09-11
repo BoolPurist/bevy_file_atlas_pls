@@ -39,7 +39,7 @@ impl FramesSerde {
 #[derive(Deserialize, TypeUuid, TypePath)]
 #[uuid = "11da45ef-11d1-4e6e-94b5-686fd8b783d0"]
 pub struct AnimationAssets {
-    name: String,
+    init_name: Option<String>,
     start_state: String,
     frames: Vec<FramesSerde>,
     #[serde(flatten)]
@@ -83,7 +83,7 @@ impl AnimationAssets {
         self.start_state.as_ref()
     }
 
-    pub fn name(&self) -> &str {
-        self.name.as_ref()
+    pub fn name(&self) -> Option<&str> {
+        self.init_name.as_deref()
     }
 }
