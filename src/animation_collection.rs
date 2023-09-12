@@ -11,6 +11,7 @@ use crate::{
         AnimationDuration, AnimationIndex, AnimationSequence, ImmutableAnimationFrames,
         KeyLookUpResult,
     },
+    utils,
 };
 
 #[derive(Debug)]
@@ -18,6 +19,22 @@ pub struct AnimationCollection {
     meta: AnimationAltlas,
     start_state: AnimationKey,
     pub frames: AnimationSequence,
+}
+
+impl std::fmt::Display for AnimationCollection {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "Start state: {}", self.start_state)?;
+        writeln!(f, "{}", self.meta)?;
+        for (key, seq) in self.frames.iter() {
+            writeln!(f, "Frame key: {}", key)?;
+            writeln!(
+                f,
+                "Frames: \n{}",
+                utils::indent_succive(&seq.to_string(), 2)
+            )?;
+        }
+        Ok(())
+    }
 }
 
 impl AnimationCollection {

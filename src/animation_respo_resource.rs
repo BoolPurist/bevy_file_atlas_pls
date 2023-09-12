@@ -5,7 +5,7 @@ use crate::{
     animation_key::AnimationKey,
     sprite_animation_bundle::SpriteAnimationBundle,
     types::{AnimationRepository, KeyLookUpResult},
-    PosScaleFactor,
+    utils, PosScaleFactor,
 };
 
 use bevy::prelude::*;
@@ -15,12 +15,36 @@ use crate::{animation_error::AnimationError, save_load::AnimationAssets, types::
 #[cfg(feature = "assets")]
 use bevy::utils::HashMap;
 
-#[derive(Resource, Default)]
+#[derive(Resource, Default, Debug)]
 pub struct AllAnimationResource {
     animation_seqs: AnimationRepository,
     #[cfg(feature = "assets")]
     handle_to_key: HashMap<Handle<AnimationAssets>, AnimationKey>,
     global_animation_duration: PosScaleFactor,
+}
+
+impl std::fmt::Display for AllAnimationResource {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(
+            f,
+            "Default animation duration secs: {}",
+            self.global_animation_duration
+        )?;
+        for (seq_key, seq) in self.animation_seqs.iter() {
+            writeln!(f, "Sequence key: {}", seq_key)?;
+
+            writeln!(f, "{}", utils::indent_succive(&seq.to_string(), 2))?;
+        }
+        #[cfg(feature = "assets")]
+        {
+            writeln!(f, "The following sequences are backed behind a reference\n")?;
+            for key in self.handle_to_key.values() {
+                write!(f, "- {}", key)?;
+            }
+        }
+
+        Ok(())
+    }
 }
 
 impl AllAnimationResource {

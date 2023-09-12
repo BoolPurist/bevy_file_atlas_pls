@@ -31,3 +31,11 @@ pub fn f32_to_animation_duration(time: f32) -> Result<AnimationDuration, Negativ
         Ok(bevy::utils::Duration::from_secs_f32(time))
     }
 }
+
+pub fn indent_succive(to_ident: &str, pad_amount: usize) -> String {
+    to_ident
+        .lines()
+        .map(|to_pad| format!("{}{}", " ".repeat(pad_amount), to_pad))
+        .collect::<Vec<String>>()
+        .join("\n")
+}

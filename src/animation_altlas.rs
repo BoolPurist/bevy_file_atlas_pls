@@ -9,6 +9,12 @@ pub struct AnimationAltlas {
     atlas: Handle<TextureAtlas>,
 }
 
+impl std::fmt::Display for AnimationAltlas {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.meta)
+    }
+}
+
 impl AnimationAltlas {
     pub fn atlas(&self) -> Handle<TextureAtlas> {
         self.atlas.clone()
@@ -27,6 +33,16 @@ pub struct AnimationAltlasMeta {
     cell_size: Vec2,
     padding: Option<Vec2>,
     offset: Option<Vec2>,
+}
+impl std::fmt::Display for AnimationAltlasMeta {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "Rows: {}", self.rows)?;
+        writeln!(f, "Columns: {}", self.columns)?;
+        writeln!(f, "Cell size: {}", self.cell_size)?;
+        writeln!(f, "Padding: {}", self.padding.unwrap_or_default())?;
+        writeln!(f, "Offset: {}", self.offset.unwrap_or_default())?;
+        Ok(())
+    }
 }
 
 impl AnimationAltlasMeta {

@@ -4,7 +4,6 @@ use bevy::{asset::ChangeWatcher, utils::petgraph::matrix_graph::Zero};
 use bevy_asset_loader::prelude::*;
 use bevy_inspector_egui::bevy_egui::EguiContext;
 use bevy_inspector_egui::egui::Ui;
-use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 use bevy_inspector_egui::{egui, DefaultInspectorConfigPlugin};
 
 use bevy_file_atlas_pls::{prelude::*, save_load::AnimationAssets};
@@ -95,6 +94,7 @@ fn setup_animated_sprites(
         Player,
         Name::new(PLAYER_TAG),
     ));
+    println!("{}", *ani_respo);
 }
 
 fn setup_app() {

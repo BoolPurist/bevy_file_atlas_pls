@@ -12,6 +12,14 @@ pub struct AnimationFrames {
     end: AnimationIndex,
     time: AnimationDuration,
 }
+
+impl std::fmt::Display for AnimationFrames {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "Start index: {}", self.start)?;
+        writeln!(f, "End index: {}", self.end)?;
+        writeln!(f, "Animation duration secs: {}", self.time.as_secs_f32())
+    }
+}
 impl AnimationFrames {
     pub fn new(
         row: AnimationIndex,
