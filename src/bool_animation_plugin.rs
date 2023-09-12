@@ -2,9 +2,10 @@ use bevy::{log::LogPlugin, prelude::*, sprite::SpritePlugin, time::TimePlugin};
 
 use crate::{
     animation_respo_resource::AllAnimationResource,
+    listen_animation_end::ListenAnimationEnd,
     prelude::AnimationComp,
     systems::{animate, apply_pending_states, do_pending_resets},
-    AnimationTimeScale, PosScaleFactor,
+    AnimationEnded, AnimationTimeScale, PosScaleFactor,
 };
 
 #[cfg(feature = "assets")]
@@ -30,6 +31,8 @@ impl Plugin for BoolAnimationPlugin {
             .register_type::<AnimationTimeScale>()
             .register_type::<AnimationComp>()
             .register_type::<PosScaleFactor>()
+            .register_type::<ListenAnimationEnd>()
+            .add_event::<AnimationEnded>()
             .add_systems(Update, (apply_pending_states, animate, do_pending_resets));
 
         #[cfg(feature = "bevy_inspect")]

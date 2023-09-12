@@ -1,7 +1,9 @@
 use bevy::prelude::*;
+use bevy::text::TextStyle;
 use bevy::window::PrimaryWindow;
 use bevy::{asset::ChangeWatcher, utils::petgraph::matrix_graph::Zero};
 use bevy_asset_loader::prelude::*;
+use bevy_file_atlas_pls::listen_animation_end::ListenAnimationEnd;
 use bevy_inspector_egui::bevy_egui::EguiContext;
 use bevy_inspector_egui::egui::Ui;
 use bevy_inspector_egui::{egui, DefaultInspectorConfigPlugin};
@@ -93,7 +95,26 @@ fn setup_animated_sprites(
         ani_respo.create_sprite_comp(PLAYER_TAG).unwrap(),
         Player,
         Name::new(PLAYER_TAG),
+        ListenAnimationEnd,
     ));
+    commands.spawn((
+        TextBundle::from_section(
+            "Last",
+            TextStyle {
+                font_size: 25.0,
+                color: Color::BLACK,
+                ..Default::default()
+            },
+        )
+        .with_style(Style {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(25.0),
+            left: Val::Px(25.0),
+            ..default()
+        }),
+        LastAnimationUi,
+    ));
+
     println!("{}", *ani_respo);
 }
 
@@ -123,6 +144,7 @@ fn setup_app() {
         .add_systems(
             Update,
             (
+                show_last_animation,
                 print_player_animation_status(1.),
                 change_state_on_input,
                 scale_animation_factor(0.25),
@@ -201,6 +223,19 @@ fn pause_game(cooldown: f32) -> impl FnMut(Res<Input<KeyCode>>, ResMut<Time>) {
                 time.pause();
             }
         }
+    }
+}
+
+#[derive(Component)]
+struct LastAnimationUi;
+fn show_last_animation(
+    mut on_animation_ended: EventReader<AnimationEnded>,
+    mut query: Query<&mut Text, With<LastAnimationUi>>,
+) {
+    if let Some(last_animatio) = on_animation_ended.into_iter().last() {
+        info!("Last: {:?}", &last_animatio);
+        let mut text = query.single_mut();
+        text.sections[0].value = format!("Last: {}", last_animatio.state);
     }
 }
 

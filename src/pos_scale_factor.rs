@@ -11,8 +11,7 @@ use bevy_inspector_egui::prelude::*;
 #[cfg_attr(
     feature = "bevy_inspect",
     derive(InspectorOptions),
-    reflect(InspectorOptions),
-    inspector(min = 0.0, max = 2.0, display = NumberDisplay::Slider)
+    reflect(InspectorOptions)
 )]
 pub struct PosScaleFactor(pub f32);
 

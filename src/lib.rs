@@ -12,10 +12,13 @@ pub mod prelude;
 #[cfg(feature = "assets")]
 pub mod save_load;
 
+pub mod animation_ended;
+pub mod listen_animation_end;
 pub mod sprite_animation_bundle;
 pub mod systems;
 pub mod types;
 
+pub use animation_ended::AnimationEnded;
 pub use animation_time_factor::AnimationTimeScale;
 pub use pos_scale_factor::PosScaleFactor;
 pub mod animation_key;
