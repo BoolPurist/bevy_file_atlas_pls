@@ -2,8 +2,9 @@ use bevy::{log::LogPlugin, prelude::*, sprite::SpritePlugin, time::TimePlugin};
 
 use crate::{
     animation_respo_resource::AllAnimationResource,
+    prelude::AnimationComp,
     systems::{animate, apply_pending_states, do_pending_resets},
-    AnimationTimeScale,
+    AnimationTimeScale, PosScaleFactor,
 };
 
 #[cfg(feature = "assets")]
@@ -13,6 +14,9 @@ use bevy_common_assets::ron::RonAssetPlugin;
 
 #[derive(Default)]
 pub struct BoolAnimationPlugin;
+
+#[cfg(feature = "bevy_inspect")]
+mod bevy_inspector;
 
 impl Plugin for BoolAnimationPlugin {
     fn build(&self, app: &mut App) {
@@ -24,8 +28,12 @@ impl Plugin for BoolAnimationPlugin {
 
         app.init_resource::<AllAnimationResource>()
             .register_type::<AnimationTimeScale>()
+            .register_type::<AnimationComp>()
+            .register_type::<PosScaleFactor>()
             .add_systems(Update, (apply_pending_states, animate, do_pending_resets));
 
+        #[cfg(feature = "bevy_inspect")]
+        bevy_inspector::setup_bevy_inspect(app);
         #[cfg(feature = "assets")]
         {
             app.add_plugins(RonAssetPlugin::<AnimationAssets>::new(&["animations.ron"]));

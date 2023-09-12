@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+#[cfg(feature = "bevy_inspect")]
+use bevy_inspector_egui::prelude::*;
 
 use crate::{
     animation_error::NotFoundError,
@@ -7,14 +9,23 @@ use crate::{
     types::{AnimationDuration, AnimationIndex, KeyLookUpResult},
 };
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Reflect)]
+#[reflect(from_reflect = false)]
+#[cfg_attr(
+    feature = "bevy_inspect",
+    derive(InspectorOptions),
+    reflect(InspectorOptions)
+)]
 pub struct AnimationComp {
+    #[reflect(ignore)]
     pub(crate) sequence: AnimationKey,
+    #[reflect(ignore)]
     pub(crate) current_state: AnimationKey,
     pub(crate) reset_state: bool,
     pub(crate) duration_for_animation: Timer,
     // Box because only an individual component holds it. It is never cloned.
     // Only there for the next frame so the system knows which one is the new state.
+    #[reflect(ignore)]
     pub(crate) next_state: Option<Box<str>>,
 }
 

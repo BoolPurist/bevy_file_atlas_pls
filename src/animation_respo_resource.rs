@@ -31,8 +31,8 @@ impl AllAnimationResource {
     pub fn state_names_under(&self, key: &str) -> impl Iterator<Item = &str> + '_ {
         self.animation_sequence(key)
             .frames()
-            .keys()
-            .map(|frame| frame.as_ref())
+            .iter()
+            .map(|frame| frame.0.as_ref())
     }
     pub fn animation_sequence(&self, key: &str) -> &AnimationCollection {
         self.animation_seqs.get(key).unwrap()

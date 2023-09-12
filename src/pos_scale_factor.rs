@@ -6,25 +6,21 @@ use thiserror::Error;
 use bevy_inspector_egui::prelude::*;
 
 #[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    PartialOrd,
-    Into,
-    Display,
-    Add,
-    AddAssign,
-    Mul,
-    MulAssign,
-    Reflect,
+    Debug, Clone, Copy, PartialEq, PartialOrd, Display, Add, AddAssign, Mul, MulAssign, Reflect,
 )]
 #[cfg_attr(
     feature = "bevy_inspect",
     derive(InspectorOptions),
-    reflect(InspectorOptions)
+    reflect(InspectorOptions),
+    inspector(min = 0.0, max = 2.0, display = NumberDisplay::Slider)
 )]
-pub struct PosScaleFactor(f32);
+pub struct PosScaleFactor(pub f32);
+
+impl Into<f32> for PosScaleFactor {
+    fn into(self) -> f32 {
+        self.to_f32()
+    }
+}
 
 impl Default for PosScaleFactor {
     fn default() -> Self {

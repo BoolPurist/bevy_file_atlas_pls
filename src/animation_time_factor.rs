@@ -12,6 +12,7 @@ use bevy_inspector_egui::prelude::*;
     derive(InspectorOptions),
     reflect(InspectorOptions)
 )]
+#[inspector(min = 10.0, max = 70.0, display = NumberDisplay::Slider)]
 pub struct AnimationTimeScale(pub PosScaleFactor);
 
 impl AnimationTimeScale {

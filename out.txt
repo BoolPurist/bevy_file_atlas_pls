@@ -1,0 +1,378 @@
+pub mod pos_scale_factor {
+    use bevy::reflect::{FromType, Reflect};
+    use bevy_inspector_egui::inspector_options::{std_options::NumberOptions, Target};
+    use derive_more::*;
+    use thiserror::Error;
+    #[cfg(feature = "bevy_inspect")]
+    use bevy_inspector_egui::prelude::*;
+    #[reflect(InspectorOptions)]
+    pub struct PosScaleFactor(pub f32);
+    #[automatically_derived]
+    impl ::core::fmt::Debug for PosScaleFactor {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
+            ::core::fmt::Formatter::debug_tuple_field1_finish(
+                f,
+                "PosScaleFactor",
+                &&self.0,
+            )
+        }
+    }
+    #[automatically_derived]
+    impl ::core::clone::Clone for PosScaleFactor {
+        #[inline]
+        fn clone(&self) -> PosScaleFactor {
+            let _: ::core::clone::AssertParamIsClone<f32>;
+            *self
+        }
+    }
+    #[automatically_derived]
+    impl ::core::marker::Copy for PosScaleFactor {}
+    #[automatically_derived]
+    impl ::core::marker::StructuralPartialEq for PosScaleFactor {}
+    #[automatically_derived]
+    impl ::core::cmp::PartialEq for PosScaleFactor {
+        #[inline]
+        fn eq(&self, other: &PosScaleFactor) -> bool {
+            self.0 == other.0
+        }
+    }
+    #[automatically_derived]
+    impl ::core::cmp::PartialOrd for PosScaleFactor {
+        #[inline]
+        fn partial_cmp(
+            &self,
+            other: &PosScaleFactor,
+        ) -> ::core::option::Option<::core::cmp::Ordering> {
+            ::core::cmp::PartialOrd::partial_cmp(&self.0, &other.0)
+        }
+    }
+    #[automatically_derived]
+    impl ::core::convert::From<PosScaleFactor> for (f32) {
+        #[inline]
+        fn from(original: PosScaleFactor) -> Self {
+            (original.0)
+        }
+    }
+    impl ::core::fmt::Display for PosScaleFactor {
+        #[allow(unused_variables)]
+        #[inline]
+        fn fmt(
+            &self,
+            _derive_more_display_formatter: &mut ::core::fmt::Formatter,
+        ) -> ::core::fmt::Result {
+            match self {
+                PosScaleFactor(_0) => {
+                    ::core::fmt::Display::fmt(_0, _derive_more_display_formatter)
+                }
+                _ => Ok(()),
+            }
+        }
+    }
+    impl ::core::ops::Add for PosScaleFactor {
+        type Output = PosScaleFactor;
+        #[inline]
+        fn add(self, rhs: PosScaleFactor) -> PosScaleFactor {
+            PosScaleFactor(self.0.add(rhs.0))
+        }
+    }
+    impl ::core::ops::AddAssign for PosScaleFactor {
+        #[inline]
+        fn add_assign(&mut self, rhs: PosScaleFactor) {
+            self.0.add_assign(rhs.0);
+        }
+    }
+    impl<__RhsT> ::core::ops::Mul<__RhsT> for PosScaleFactor
+    where
+        f32: ::core::ops::Mul<__RhsT, Output = f32>,
+    {
+        type Output = PosScaleFactor;
+        #[inline]
+        fn mul(self, rhs: __RhsT) -> PosScaleFactor {
+            PosScaleFactor(<f32 as ::core::ops::Mul<__RhsT>>::mul(self.0, rhs))
+        }
+    }
+    impl<__RhsT> ::core::ops::MulAssign<__RhsT> for PosScaleFactor
+    where
+        f32: ::core::ops::MulAssign<__RhsT>,
+    {
+        #[inline]
+        fn mul_assign(&mut self, rhs: __RhsT) {
+            <f32 as ::core::ops::MulAssign<__RhsT>>::mul_assign(&mut self.0, rhs);
+        }
+    }
+    #[allow(unused_mut)]
+    impl bevy::reflect::GetTypeRegistration for PosScaleFactor
+    where
+        (f32): bevy::reflect::FromReflect,
+    {
+        fn get_type_registration() -> bevy::reflect::TypeRegistration {
+            let mut registration = bevy::reflect::TypeRegistration::of::<Self>();
+            registration
+                .insert::<
+                    bevy::reflect::ReflectFromPtr,
+                >(bevy::reflect::FromType::<Self>::from_type());
+            registration
+                .insert::<
+                    bevy::reflect::ReflectFromReflect,
+                >(bevy::reflect::FromType::<Self>::from_type());
+            let ignored_indices = ::core::iter::IntoIterator::into_iter([]);
+            registration
+                .insert::<
+                    bevy::reflect::serde::SerializationData,
+                >(bevy::reflect::serde::SerializationData::new(ignored_indices));
+            registration
+                .insert::<
+                    ReflectInspectorOptions,
+                >(bevy::reflect::FromType::<Self>::from_type());
+            registration
+        }
+    }
+    impl bevy::reflect::Typed for PosScaleFactor
+    where
+        (f32): bevy::reflect::FromReflect,
+    {
+        fn type_info() -> &'static bevy::reflect::TypeInfo {
+            static CELL: bevy::reflect::utility::NonGenericTypeInfoCell = bevy::reflect::utility::NonGenericTypeInfoCell::new();
+            CELL.get_or_set(|| {
+                let fields = [bevy::reflect::UnnamedField::new::<f32>(0)];
+                let info = bevy::reflect::TupleStructInfo::new::<
+                    Self,
+                >("PosScaleFactor", &fields);
+                bevy::reflect::TypeInfo::TupleStruct(info)
+            })
+        }
+    }
+    impl bevy::reflect::TypePath for PosScaleFactor
+    where
+        (f32): bevy::reflect::FromReflect,
+    {
+        fn type_path() -> &'static str {
+            "bevy_file_atlas_pls::pos_scale_factor::PosScaleFactor"
+        }
+        fn short_type_path() -> &'static str {
+            "PosScaleFactor"
+        }
+        fn type_ident() -> Option<&'static str> {
+            ::core::option::Option::Some("PosScaleFactor")
+        }
+        fn crate_name() -> Option<&'static str> {
+            ::core::option::Option::Some(
+                "bevy_file_atlas_pls::pos_scale_factor".split(':').next().unwrap(),
+            )
+        }
+        fn module_path() -> Option<&'static str> {
+            ::core::option::Option::Some("bevy_file_atlas_pls::pos_scale_factor")
+        }
+    }
+    impl bevy::reflect::TupleStruct for PosScaleFactor
+    where
+        (f32): bevy::reflect::FromReflect,
+    {
+        fn field(
+            &self,
+            index: usize,
+        ) -> ::core::option::Option<&dyn bevy::reflect::Reflect> {
+            match index {
+                0usize => ::core::option::Option::Some(&self.0),
+                _ => ::core::option::Option::None,
+            }
+        }
+        fn field_mut(
+            &mut self,
+            index: usize,
+        ) -> ::core::option::Option<&mut dyn bevy::reflect::Reflect> {
+            match index {
+                0usize => ::core::option::Option::Some(&mut self.0),
+                _ => ::core::option::Option::None,
+            }
+        }
+        fn field_len(&self) -> usize {
+            1usize
+        }
+        fn iter_fields(&self) -> bevy::reflect::TupleStructFieldIter {
+            bevy::reflect::TupleStructFieldIter::new(self)
+        }
+        fn clone_dynamic(&self) -> bevy::reflect::DynamicTupleStruct {
+            let mut dynamic: bevy::reflect::DynamicTupleStruct = ::core::default::Default::default();
+            dynamic
+                .set_represented_type(
+                    bevy::reflect::Reflect::get_represented_type_info(self),
+                );
+            dynamic.insert_boxed(bevy::reflect::Reflect::clone_value(&self.0));
+            dynamic
+        }
+    }
+    impl bevy::reflect::Reflect for PosScaleFactor
+    where
+        (f32): bevy::reflect::FromReflect,
+    {
+        #[inline]
+        fn type_name(&self) -> &str {
+            ::core::any::type_name::<Self>()
+        }
+        #[inline]
+        fn get_represented_type_info(
+            &self,
+        ) -> ::core::option::Option<&'static bevy::reflect::TypeInfo> {
+            ::core::option::Option::Some(<Self as bevy::reflect::Typed>::type_info())
+        }
+        #[inline]
+        fn into_any(
+            self: ::std::boxed::Box<Self>,
+        ) -> ::std::boxed::Box<dyn ::core::any::Any> {
+            self
+        }
+        #[inline]
+        fn as_any(&self) -> &dyn ::core::any::Any {
+            self
+        }
+        #[inline]
+        fn as_any_mut(&mut self) -> &mut dyn ::core::any::Any {
+            self
+        }
+        #[inline]
+        fn into_reflect(
+            self: ::std::boxed::Box<Self>,
+        ) -> ::std::boxed::Box<dyn bevy::reflect::Reflect> {
+            self
+        }
+        #[inline]
+        fn as_reflect(&self) -> &dyn bevy::reflect::Reflect {
+            self
+        }
+        #[inline]
+        fn as_reflect_mut(&mut self) -> &mut dyn bevy::reflect::Reflect {
+            self
+        }
+        #[inline]
+        fn clone_value(&self) -> ::std::boxed::Box<dyn bevy::reflect::Reflect> {
+            ::std::boxed::Box::new(bevy::reflect::TupleStruct::clone_dynamic(self))
+        }
+        #[inline]
+        fn set(
+            &mut self,
+            value: ::std::boxed::Box<dyn bevy::reflect::Reflect>,
+        ) -> ::core::result::Result<(), ::std::boxed::Box<dyn bevy::reflect::Reflect>> {
+            *self = <dyn bevy::reflect::Reflect>::take(value)?;
+            ::core::result::Result::Ok(())
+        }
+        #[inline]
+        fn apply(&mut self, value: &dyn bevy::reflect::Reflect) {
+            if let bevy::reflect::ReflectRef::TupleStruct(struct_value) = bevy::reflect::Reflect::reflect_ref(
+                value,
+            ) {
+                for (i, value) in ::core::iter::Iterator::enumerate(
+                    bevy::reflect::TupleStruct::iter_fields(struct_value),
+                ) {
+                    bevy::reflect::TupleStruct::field_mut(self, i)
+                        .map(|v| v.apply(value));
+                }
+            } else {
+                {
+                    ::core::panicking::panic_fmt(
+                        format_args!(
+                            "Attempted to apply non-TupleStruct type to TupleStruct type.",
+                        ),
+                    );
+                };
+            }
+        }
+        fn reflect_ref(&self) -> bevy::reflect::ReflectRef {
+            bevy::reflect::ReflectRef::TupleStruct(self)
+        }
+        fn reflect_mut(&mut self) -> bevy::reflect::ReflectMut {
+            bevy::reflect::ReflectMut::TupleStruct(self)
+        }
+        fn reflect_owned(self: ::std::boxed::Box<Self>) -> bevy::reflect::ReflectOwned {
+            bevy::reflect::ReflectOwned::TupleStruct(self)
+        }
+        fn reflect_partial_eq(
+            &self,
+            value: &dyn bevy::reflect::Reflect,
+        ) -> ::core::option::Option<bool> {
+            bevy::reflect::tuple_struct_partial_eq(self, value)
+        }
+    }
+    impl bevy::reflect::FromReflect for PosScaleFactor
+    where
+        (f32): bevy::reflect::FromReflect,
+    {
+        fn from_reflect(
+            reflect: &dyn bevy::reflect::Reflect,
+        ) -> ::core::option::Option<Self> {
+            if let bevy::reflect::ReflectRef::TupleStruct(__ref_struct) = bevy::reflect::Reflect::reflect_ref(
+                reflect,
+            ) {
+                ::core::option::Option::Some(Self {
+                    0: (|| <f32 as bevy::reflect::FromReflect>::from_reflect(
+                        bevy::reflect::TupleStruct::field(__ref_struct, 0)?,
+                    ))()?,
+                })
+            } else {
+                ::core::option::Option::None
+            }
+        }
+    }
+    impl FromType<PosScaleFactor> for bevy_inspector_egui::InspectorOptions {
+        fn from_type() -> Self {
+            let mut options = bevy_inspector_egui::InspectorOptions::default();
+            let field_options = NumberOptions::<f32>::positive();
+            options.insert(Target::Field(0usize), field_options);
+            options
+        }
+    }
+    impl Default for PosScaleFactor {
+        fn default() -> Self {
+            Self(1.)
+        }
+    }
+    impl PosScaleFactor {
+        pub fn new(value: f32) -> Result<Self, NegativeValueError> {
+            if value < 0. { Err(NegativeValueError(value)) } else { Ok(Self(value)) }
+        }
+        pub fn at_least_zero(value: f32) -> Self {
+            if value < 0. { Self(0.) } else { Self(value) }
+        }
+        pub fn to_f32(self) -> f32 {
+            self.0
+        }
+    }
+    impl std::ops::Sub for PosScaleFactor {
+        type Output = Self;
+        fn sub(self, rhs: Self) -> Self::Output {
+            Self::at_least_zero(self.0 - rhs.0)
+        }
+    }
+    impl std::ops::SubAssign for PosScaleFactor {
+        fn sub_assign(&mut self, rhs: Self) {
+            *self = self.clone() - rhs;
+        }
+    }
+    #[error("Value {0} should not be negative")]
+    pub struct NegativeValueError(f32);
+    #[automatically_derived]
+    impl ::core::fmt::Debug for NegativeValueError {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
+            ::core::fmt::Formatter::debug_tuple_field1_finish(
+                f,
+                "NegativeValueError",
+                &&self.0,
+            )
+        }
+    }
+    #[allow(unused_qualifications)]
+    impl std::error::Error for NegativeValueError {}
+    #[allow(unused_qualifications)]
+    impl std::fmt::Display for NegativeValueError {
+        #[allow(clippy::used_underscore_binding)]
+        fn fmt(&self, __formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            use thiserror::__private::AsDisplay as _;
+            #[allow(unused_variables, deprecated)]
+            let Self(_0) = self;
+            __formatter
+                .write_fmt(
+                    format_args!("Value {0} should not be negative", _0.as_display()),
+                )
+        }
+    }
+}

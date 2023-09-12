@@ -1,10 +1,12 @@
+use bevy::reflect::Reflect;
+
 use crate::{
     animation_error::AnimationFrameError,
     types::{AnimationDuration, AnimationFrameResult, AnimationIndex},
     utils,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Reflect)]
 pub struct AnimationFrames {
     start: AnimationIndex,
     end: AnimationIndex,
