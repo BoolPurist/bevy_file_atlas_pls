@@ -1,12 +1,14 @@
+use std::borrow::Cow;
+
 use bevy::prelude::*;
 #[cfg(feature = "bevy_inspect")]
 use bevy_inspector_egui::prelude::*;
 
 use crate::{
     animation_error::NotFoundError,
-    animation_key::AnimationKey,
     prelude::{AllAnimationResource, ImmutableAnimationFrames},
-    types::{AnimationDuration, AnimationIndex, KeyLookUpResult},
+    text_like::TextLike,
+    types::{AnimationDuration, AnimationIndex, AnimationReference, KeyLookUpResult},
 };
 
 #[derive(Component, Debug, Reflect)]
@@ -17,24 +19,21 @@ use crate::{
     reflect(InspectorOptions)
 )]
 pub struct AnimationComp {
-    #[reflect(ignore)]
-    pub(crate) sequence: AnimationKey,
-    #[reflect(ignore)]
-    pub(crate) current_state: AnimationKey,
+    pub(crate) sequence: AnimationReference,
+    pub(crate) current_state: AnimationReference,
     pub(crate) reset_state: bool,
     pub(crate) duration_for_animation: Timer,
-    // Box because only an individual component holds it. It is never cloned.
-    // Only there for the next frame so the system knows which one is the new state.
     #[reflect(ignore)]
-    pub(crate) next_state: Option<Box<str>>,
+    pub(crate) next_state: Option<AnimationReference>,
 }
 
 impl AnimationComp {
     pub fn new(
-        all_frames: AnimationKey,
-        start_state: AnimationKey,
+        all_frames: impl Into<Cow<'static, str>>,
+        start_state: impl Into<Cow<'static, str>>,
         repos: &AllAnimationResource,
     ) -> Result<Self, NotFoundError> {
+        let (all_frames, start_state) = (all_frames.into(), start_state.into());
         let duration_secs = get_animation_seq(repos, &all_frames, &start_state)?
             .1
             .time_per_frame();
@@ -48,12 +47,14 @@ impl AnimationComp {
         })
     }
 
-    pub fn set_state(&mut self, key: &str) {
-        self.next_state = Some(Box::from(key));
+    pub fn set_state<'a>(&mut self, key: impl Into<TextLike<'a>>) {
+        let key = key.into();
+        self.next_state = Some(key.into());
     }
 
-    pub fn change_state(&mut self, key: &str) {
-        if key != self.current_state.as_ref() {
+    pub fn change_state<'a>(&mut self, key: impl Into<TextLike<'a>>) {
+        let key = key.into();
+        if key.as_str() != self.current_state.as_ref() {
             self.set_state(key);
         }
     }
@@ -99,7 +100,7 @@ pub(crate) fn get_animation_seq(
     repos: &AllAnimationResource,
     frames: &str,
     current_state: &str,
-) -> KeyLookUpResult<(AnimationKey, ImmutableAnimationFrames)> {
+) -> KeyLookUpResult<(&'static str, ImmutableAnimationFrames)> {
     repos
         .animation_under(frames)?
         .key_and_frames_under(&current_state)

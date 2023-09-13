@@ -1,16 +1,16 @@
 use bevy::prelude::*;
 
-use crate::animation_key::AnimationKey;
+use crate::types::AnimationReference;
 
 #[derive(Event, Debug)]
 pub struct AnimationEnded {
     pub who: Entity,
     pub progress: AnimationProgress,
-    pub state: AnimationKey,
+    pub state: AnimationReference,
 }
 
 impl AnimationEnded {
-    pub fn new_complete(who: Entity, state: AnimationKey) -> Self {
+    pub fn new_complete(who: Entity, state: AnimationReference) -> Self {
         Self {
             who,
             progress: AnimationProgress(1.),

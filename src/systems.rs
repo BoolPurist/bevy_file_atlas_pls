@@ -128,8 +128,8 @@ pub fn apply_pending_states(
             }
 
             let (new_time, start) = {
-                let (key, new_animation) = get_animation_seq(respo, &animator.sequence, &new)?;
-                animator.current_state = key;
+                let (new_key, new_animation) = get_animation_seq(respo, &animator.sequence, &new)?;
+                animator.current_state = new_key.into();
                 (new_animation.time_per_frame(), new_animation.start())
             };
             animator.duration_for_animation = new_reapting_time(new_time);

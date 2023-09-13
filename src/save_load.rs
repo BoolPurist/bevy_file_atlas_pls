@@ -8,11 +8,12 @@ use crate::{
     animation_collection::{AnimationCollection, AnimationSequenceBuilder},
     animation_frames::AnimationFrames,
     prelude::{AnimationAltlasMeta, AnimationCollectionBuilder, AnimationIndex, AnimationSequence},
+    text_like::TextLike,
     types::AnimationResult,
     utils, PosScaleFactor,
 };
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone, Debug)]
 pub struct FramesSerde {
     name: String,
     start_row: usize,
@@ -26,6 +27,11 @@ impl FramesSerde {
     pub fn name(&self) -> &str {
         self.name.as_ref()
     }
+
+    pub fn clone_name(&self) -> String {
+        self.name.clone()
+    }
+
     pub fn to_animation_frames(
         &self,
         sequence_meta: &AnimationAssets,
@@ -52,7 +58,7 @@ impl FramesSerde {
     }
 }
 
-#[derive(Deserialize, TypeUuid, TypePath)]
+#[derive(Deserialize, TypeUuid, TypePath, Clone)]
 #[uuid = "11da45ef-11d1-4e6e-94b5-686fd8b783d0"]
 pub struct AnimationAssets {
     init_name: Option<String>,
@@ -74,7 +80,7 @@ impl AnimationAssets {
         let mut collection = AnimationCollectionBuilder::new(meta);
         for (name, frames) in self.frames.iter().map(|to_split| {
             (
-                to_split.name(),
+                TextLike::from(to_split.clone_name()).to_registered_name(),
                 to_split.to_animation_frames(self, default_ani_duration),
             )
         }) {
@@ -91,7 +97,7 @@ impl AnimationAssets {
         let mut seq = AnimationSequenceBuilder::default();
         for (name, frames) in self.frames.iter().map(|to_split| {
             (
-                to_split.name(),
+                TextLike::from(to_split.clone_name()).to_registered_name(),
                 to_split.to_animation_frames(self, default_ani_duration),
             )
         }) {

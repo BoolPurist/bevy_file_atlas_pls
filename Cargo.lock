@@ -629,6 +629,7 @@ dependencies = [
  "bevy_asset_loader",
  "bevy_common_assets",
  "derive_more",
+ "once_cell",
  "serde",
  "thiserror",
 ]

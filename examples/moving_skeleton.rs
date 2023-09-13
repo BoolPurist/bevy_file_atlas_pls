@@ -29,22 +29,27 @@ fn change_state_on_input(
     let (mut animation, mut location) = query.single_mut();
     let mut direction = Vec2::ZERO;
     if input.pressed(KeyCode::A) {
-        animation.change_state(AniStates::Left.into());
         direction.x -= 1.;
     }
     if input.pressed(KeyCode::D) {
-        animation.change_state(AniStates::Right.into());
         direction.x += 1.;
     }
     if input.pressed(KeyCode::W) {
-        animation.change_state(AniStates::Top.into());
         direction.y += 1.;
     }
     if input.pressed(KeyCode::S) {
-        animation.change_state(AniStates::Bottom.into());
         direction.y -= 1.;
     }
     let movement = direction * time.delta_seconds() * PLAYER_SPEED;
+    if direction.x > 0. {
+        animation.change_state(AniStates::Right.to_str());
+    } else if direction.x < 0. {
+        animation.change_state(AniStates::Left.to_str());
+    } else if direction.y > 0. {
+        animation.change_state(AniStates::Top.to_str());
+    } else {
+        animation.change_state(AniStates::Bottom.to_str());
+    }
 
     location.translation += Vec3::new(movement.x, movement.y, 0.);
     if direction.length().is_zero() {
@@ -59,9 +64,9 @@ pub enum AniStates {
     Top,
 }
 
-impl From<AniStates> for &'static str {
-    fn from(value: AniStates) -> Self {
-        match value {
+impl AniStates {
+    fn to_str(self) -> &'static str {
+        match self {
             AniStates::Left => "Left",
             AniStates::Right => "Right",
             AniStates::Bottom => "Bottom",
