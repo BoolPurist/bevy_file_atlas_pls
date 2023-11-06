@@ -1,8 +1,7 @@
 use bevy::prelude::*;
 use bevy::text::TextStyle;
+use bevy::utils::petgraph::matrix_graph::Zero;
 use bevy::window::PrimaryWindow;
-use bevy::{asset::ChangeWatcher, utils::petgraph::matrix_graph::Zero};
-use bevy_asset_loader::prelude::*;
 use bevy_file_atlas_pls::listen_animation_end::ListenAnimationEnd;
 use bevy_inspector_egui::bevy_egui::EguiContext;
 use bevy_inspector_egui::egui::Ui;
@@ -20,7 +19,7 @@ fn main() {
 
 fn change_state_on_input(
     mut query: Query<(&mut AnimationComp, &mut Transform), With<Player>>,
-    time: Res<Time>,
+    time: Res<Time<Virtual>>,
     input: Res<Input<KeyCode>>,
 ) {
     if time.is_paused() {
@@ -80,16 +79,20 @@ pub struct Player;
 
 fn setup_animated_sprites(
     mut commands: Commands,
-    assets: Res<GameAssets>,
+    asset_server: Res<AssetServer>,
     mut ani_respo: ResMut<AllAnimationResource>,
     animations: Res<Assets<AnimationAssets>>,
     mut atlase_coll: ResMut<Assets<TextureAtlas>>,
 ) {
     commands.spawn(Camera2dBundle::default());
-    let skeleton_image = assets.skeleton_sprite.clone();
+
+    //
+    // player.animations.ron
+    let skeleton_image = asset_server.load("BODY_skeleton.png");
+    let ani_asset = asset_server.load("player.animations.ron");
     ani_respo
         .add_from_asset(
-            assets.skeleton_animations.clone(),
+            ani_asset.clone(),
             skeleton_image,
             &mut atlase_coll,
             &animations,
@@ -126,26 +129,13 @@ fn setup_animated_sprites(
 fn setup_app() {
     App::new()
         .add_plugins((
-            DefaultPlugins
-                .set(ImagePlugin::default_nearest())
-                .set(AssetPlugin {
-                    watch_for_changes: ChangeWatcher::with_delay(
-                        bevy::utils::Duration::from_millis(200),
-                    ),
-                    ..Default::default()
-                })
-                .build(),
+            DefaultPlugins.set(ImagePlugin::default_nearest()).build(),
             BoolAnimationPlugin,
             EguiPlugin,
             DefaultInspectorConfigPlugin,
         ))
-        .add_state::<GameLoadingState>()
         .init_resource::<TimeScaleIncrement>()
-        .add_loading_state(
-            LoadingState::new(GameLoadingState::Loading).continue_to_state(GameLoadingState::Done),
-        )
-        .add_collection_to_loading_state::<_, GameAssets>(GameLoadingState::Loading)
-        .add_systems(OnEnter(GameLoadingState::Done), setup_animated_sprites)
+        .add_systems(Startup, setup_animated_sprites)
         .add_systems(
             Update,
             (
@@ -155,8 +145,7 @@ fn setup_app() {
                 scale_animation_factor(0.25),
                 pause_game(0.5),
                 ui_dump_show,
-            )
-                .run_if(in_state(GameLoadingState::Done)),
+            ),
         )
         .run();
 }
@@ -209,7 +198,7 @@ fn scale_animation_factor(
     }
 }
 
-fn pause_game(cooldown: f32) -> impl FnMut(Res<Input<KeyCode>>, ResMut<Time>) {
+fn pause_game(cooldown: f32) -> impl FnMut(Res<Input<KeyCode>>, ResMut<Time<Virtual>>) {
     let mut timer = Timer::new(
         bevy::utils::Duration::from_secs_f32(cooldown),
         TimerMode::Once,
@@ -237,7 +226,7 @@ fn show_last_animation(
     mut on_animation_ended: EventReader<AnimationEnded>,
     mut query: Query<&mut Text, With<LastAnimationUi>>,
 ) {
-    if let Some(last_animatio) = on_animation_ended.into_iter().last() {
+    if let Some(last_animatio) = on_animation_ended.read().last() {
         info!("Last: {:?}", &last_animatio);
         let mut text = query.single_mut();
         text.sections[0].value = format!("Last: {}", last_animatio.state);
@@ -265,7 +254,7 @@ fn ui_dump_show(world: &mut World) {
     });
 
     fn show_time(world: &mut World, ui: &mut Ui) {
-        let mut time = world.resource_mut::<Time>();
+        let mut time = world.resource_mut::<Time<Virtual>>();
         let paused = &mut time.is_paused();
         ui.checkbox(paused, "Paused");
         set_paused(&mut time, *paused)
@@ -281,22 +270,12 @@ impl Default for TimeScaleIncrement {
     }
 }
 
-#[derive(Resource, AssetCollection)]
+#[derive(Resource)]
 pub struct GameAssets {
-    #[asset(path = "BODY_skeleton.png")]
     pub skeleton_sprite: Handle<Image>,
-    #[asset(path = "player.animations.ron")]
     pub skeleton_animations: Handle<AnimationAssets>,
 }
-
-#[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
-pub enum GameLoadingState {
-    #[default]
-    Loading,
-    Done,
-}
-
-fn set_paused(time: &mut Time, paused: bool) {
+fn set_paused(time: &mut Time<Virtual>, paused: bool) {
     if paused {
         time.pause();
     } else {

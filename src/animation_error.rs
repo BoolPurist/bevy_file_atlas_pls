@@ -13,6 +13,8 @@ pub enum AnimationError {
     DuplicateKeySequenceProvided(String),
     #[error("{0}")]
     NegativeAnimationTime(#[from] NegativeAnimationTime),
+    #[error("Animation sequence was not loade yet")]
+    AnimationNotLoadedYet,
 }
 
 #[derive(Debug, Error)]

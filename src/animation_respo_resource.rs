@@ -21,7 +21,7 @@ use bevy::utils::HashMap;
 pub struct AllAnimationResource {
     animation_seqs: AnimationRepository,
     #[cfg(feature = "assets")]
-    handle_to_key: HashMap<Handle<AnimationAssets>, &'static str>,
+    handle_to_key: HashMap<AssetId<AnimationAssets>, &'static str>,
     global_animation_duration: PosScaleFactor,
 }
 
@@ -88,8 +88,7 @@ impl AllAnimationResource {
         key: Option<impl Into<TextLike<'a>>>,
     ) -> AnimationResult<&mut Self> {
         let Some(animations_loaded) = asset_animation.get(&animations) else {
-            warn!("Animation asset is not loaded yet.");
-            return Ok(self);
+            return Err(AnimationError::AnimationNotLoadedYet);
         };
         let animations_loaded = animations_loaded.clone();
 
@@ -106,28 +105,30 @@ impl AllAnimationResource {
         };
 
         self.inner_add_from_asset(static_key, animations_loaded.clone(), image, asset_atlases)?;
-        self.handle_to_key.insert(animations, static_key);
+        self.handle_to_key.insert(animations.id(), static_key);
         Ok(self)
     }
 
     #[cfg(feature = "assets")]
     pub fn replace_from_assets(
         &mut self,
-        animations: &Handle<AnimationAssets>,
+        animations_id: &AssetId<AnimationAssets>,
         assets_animations: &Assets<AnimationAssets>,
     ) -> AnimationResult<&mut Self> {
-        let Some(animations_loaded) = assets_animations.get(animations) else {
-            return Ok(self);
-        };
-        let name = self.handle_to_key.get(animations).unwrap();
+        match assets_animations.get(*animations_id) {
+            Some(animations) => {
+                let name = *self.handle_to_key.get(animations_id).unwrap();
 
-        let to_change = self
-            .animation_seqs
-            .get_mut(name)
-            .ok_or_else(|| NotFoundError::AnimationSequence(name.to_string()))?;
-        let new_seq = animations_loaded.to_ani_seq(self.global_animation_duration)?;
-        to_change.set_frames(new_seq);
-        Ok(self)
+                let to_change = self
+                    .animation_seqs
+                    .get_mut(name)
+                    .ok_or_else(|| NotFoundError::AnimationSequence(name.to_string()))?;
+                let new_seq = animations.to_ani_seq(self.global_animation_duration)?;
+                to_change.set_frames(new_seq);
+                Ok(self)
+            }
+            None => return Ok(self),
+        }
     }
 
     #[cfg(feature = "assets")]

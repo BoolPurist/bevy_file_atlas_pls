@@ -1,7 +1,4 @@
-use bevy::{
-    prelude::*,
-    reflect::{TypePath, TypeUuid},
-};
+use bevy::{prelude::*, reflect::TypePath};
 use serde::Deserialize;
 
 use crate::{
@@ -58,8 +55,7 @@ impl FramesSerde {
     }
 }
 
-#[derive(Deserialize, TypeUuid, TypePath, Clone)]
-#[uuid = "11da45ef-11d1-4e6e-94b5-686fd8b783d0"]
+#[derive(Deserialize, Asset, TypePath, Clone)]
 pub struct AnimationAssets {
     init_name: Option<String>,
     start_state: String,

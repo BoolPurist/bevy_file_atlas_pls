@@ -20,7 +20,7 @@ pub fn animate(
         &AnimationTimeScale,
         Has<ListenAnimationEnd>,
     )>,
-    time: Res<Time>,
+    time: Res<Time<Virtual>>,
     repos: Res<AllAnimationResource>,
     on_animation_finish: EventWriter<AnimationEnded>,
 ) {
@@ -39,7 +39,7 @@ pub fn animate(
             &AnimationTimeScale,
             Has<ListenAnimationEnd>,
         )>,
-        time: &Time,
+        time: &Time<Virtual>,
         repos: &AllAnimationResource,
         mut on_animation_finish: EventWriter<AnimationEnded>,
     ) -> AnimationResult {
