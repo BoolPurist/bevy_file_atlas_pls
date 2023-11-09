@@ -7,12 +7,19 @@ use bevy_inspector_egui::bevy_egui::EguiContext;
 use bevy_inspector_egui::egui::Ui;
 use bevy_inspector_egui::{egui, DefaultInspectorConfigPlugin};
 
+use bevy_asset_loader::prelude::*;
 use bevy_file_atlas_pls::{prelude::*, save_load::AnimationAssets};
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 
 pub const PLAYER_TAG: &str = "player";
 pub const PLAYER_SPEED: f32 = 200.;
 
+#[derive(Clone, Eq, PartialEq, Debug, Hash, Default, States)]
+pub enum LoadingGameState {
+    #[default]
+    AssetLoading,
+    Next,
+}
 fn main() {
     setup_app();
 }
@@ -134,8 +141,14 @@ fn setup_app() {
             EguiPlugin,
             DefaultInspectorConfigPlugin,
         ))
+        .add_state::<LoadingGameState>()
+        .add_loading_state(
+            LoadingState::new(LoadingGameState::default())
+                .continue_to_state(LoadingGameState::Next),
+        )
+        .add_collection_to_loading_state::<_, GameAssets>(LoadingGameState::default())
         .init_resource::<TimeScaleIncrement>()
-        .add_systems(Startup, setup_animated_sprites)
+        .add_systems(OnEnter(LoadingGameState::Next), setup_animated_sprites)
         .add_systems(
             Update,
             (
@@ -145,7 +158,8 @@ fn setup_app() {
                 scale_animation_factor(0.25),
                 pause_game(0.5),
                 ui_dump_show,
-            ),
+            )
+                .run_if(in_state(LoadingGameState::Next)),
         )
         .run();
 }
@@ -270,11 +284,14 @@ impl Default for TimeScaleIncrement {
     }
 }
 
-#[derive(Resource)]
+#[derive(AssetCollection, Resource)]
 pub struct GameAssets {
+    #[asset(path = "BODY_skeleton.png")]
     pub skeleton_sprite: Handle<Image>,
+    #[asset(path = "player.animations.ron")]
     pub skeleton_animations: Handle<AnimationAssets>,
 }
+
 fn set_paused(time: &mut Time<Virtual>, paused: bool) {
     if paused {
         time.pause();

@@ -39,7 +39,7 @@ opt-level = 1
 opt-level = 3
 
 [dev-dependencies]
-bevy_asset_loader = { version = "0.17.0" }
+bevy_asset_loader = { version = "0.18.0" }
 
 [features]
 default = ["bevy_inspect", "assets"]
