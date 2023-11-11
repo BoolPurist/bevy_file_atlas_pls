@@ -21,6 +21,7 @@ use crate::{
 pub struct AnimationComp {
     pub(crate) sequence: AnimationReference,
     pub(crate) current_state: AnimationReference,
+    pub(crate) has_reached_end_without_repeat: bool,
     pub(crate) reset_state: bool,
     pub(crate) duration_for_animation: Timer,
     #[reflect(ignore)]
@@ -34,9 +35,8 @@ impl AnimationComp {
         repos: &AllAnimationResource,
     ) -> Result<Self, NotFoundError> {
         let (all_frames, start_state) = (all_frames.into(), start_state.into());
-        let duration_secs = get_animation_seq(repos, &all_frames, &start_state)?
-            .1
-            .time_per_frame();
+        let (_, frames) = get_animation_seq(repos, &all_frames, &start_state)?;
+        let duration_secs = frames.time_per_frame();
         let frame_seq_duration = new_reapting_time(duration_secs);
         Ok(Self {
             duration_for_animation: frame_seq_duration,
@@ -44,11 +44,13 @@ impl AnimationComp {
             current_state: start_state,
             next_state: None,
             reset_state: false,
+            has_reached_end_without_repeat: false,
         })
     }
 
     pub fn set_state<'a>(&mut self, key: impl Into<TextLike<'a>>) {
         let key = key.into();
+        self.has_reached_end_without_repeat = false;
         self.next_state = Some(key.into());
     }
 
@@ -60,6 +62,7 @@ impl AnimationComp {
     }
 
     pub fn reset_current_state(&mut self) {
+        self.has_reached_end_without_repeat = false;
         self.reset_state = true;
     }
 
@@ -103,5 +106,5 @@ pub(crate) fn get_animation_seq(
 ) -> KeyLookUpResult<(&'static str, ImmutableAnimationFrames)> {
     repos
         .animation_under(frames)?
-        .key_and_frames_under(&current_state)
+        .key_and_frames_under(current_state)
 }

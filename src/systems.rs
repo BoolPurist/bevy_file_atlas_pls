@@ -45,6 +45,10 @@ pub fn animate(
     ) -> AnimationResult {
         let mut animations_finished: Vec<AnimationEnded> = Vec::new();
         for (who, mut animator, mut current_sprite, time_scale, listen_end) in query.iter_mut() {
+            if animator.has_reached_end_without_repeat {
+                continue;
+            }
+
             let scaled_time = time_scale.scale_duration(time.delta());
 
             if animator
@@ -53,28 +57,37 @@ pub fn animate(
                 .just_finished()
             {
                 let current_animation = animator.get_current_seq(repos)?;
-                let last_frame_has_ended =
-                    listen_end && current_animation.end() == current_sprite.index;
-                if last_frame_has_ended {
-                    info!("{}", stringify!(last_frame_has_ended));
+                let last_frame_has_ended = current_animation.end() == current_sprite.index;
+                let report_end_of_last_frame = listen_end && last_frame_has_ended;
+                let has_reached_end_without_repeat =
+                    last_frame_has_ended && !current_animation.is_infinite();
+                dbg!(current_animation.is_infinite());
+                dbg!(has_reached_end_without_repeat);
+
+                if report_end_of_last_frame {
                     animations_finished.push(AnimationEnded::new_complete(
                         who,
                         animator.current_state.clone(),
                     ));
                 }
-                let next = current_sprite.index + 1;
-                animator.duration_for_animation =
-                    crate::animation_comp::new_reapting_time(current_animation.time());
 
-                current_sprite.index = if next > current_animation.end() {
-                    current_animation.start()
+                if has_reached_end_without_repeat {
+                    animator.has_reached_end_without_repeat = true;
                 } else {
-                    next
-                };
+                    let next = current_sprite.index + 1;
+                    animator.duration_for_animation =
+                        crate::animation_comp::new_reapting_time(current_animation.time());
+
+                    current_sprite.index = if next > current_animation.end() {
+                        current_animation.start()
+                    } else {
+                        next
+                    };
+                }
             }
         }
         if !animations_finished.is_empty() {
-            on_animation_finish.send_batch(animations_finished.into_iter());
+            on_animation_finish.send_batch(animations_finished);
         }
         Ok(())
     }
@@ -118,7 +131,7 @@ pub fn apply_pending_states(
     ) -> AnimationResult {
         if let Some(new) = animator.next_state.take() {
             if listen_animation_end {
-                let progress = utils::get_progress_of_animation(&animator, respo, to_adjust)?;
+                let progress = utils::get_progress_of_animation(animator, respo, to_adjust)?;
                 let state = animator.current_state.clone();
                 on_change.push(AnimationEnded {
                     who,
@@ -154,7 +167,7 @@ pub fn do_pending_resets(
     ) -> AnimationResult<()> {
         if animator.reset_state {
             animator.reset_state = false;
-            let current_animation = animator.get_current_seq(&repos)?;
+            let current_animation = animator.get_current_seq(repos)?;
             texture_sprite.index = current_animation.start();
             animator.duration_for_animation.reset();
         }

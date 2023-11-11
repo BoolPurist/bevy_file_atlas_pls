@@ -23,9 +23,9 @@ pub type AnimationSeqToBuild<'a> = HashMap<TextLike<'a>, ImmutableAnimationFrame
 pub type AnimationRepository = HashMap<&'static str, AnimationCollection>;
 pub type AnimationDuration = bevy::utils::Duration;
 
-pub fn to_build_to_ani_seq<'a>(to_convert: AnimationSeqToBuild<'a>) -> AnimationSequence {
+pub fn to_build_to_ani_seq(to_convert: AnimationSeqToBuild<'_>) -> AnimationSequence {
     to_convert
         .into_iter()
-        .map(|(key_to_convert, value)| (key_to_convert.to_registered_name(), value))
+        .map(|(key_to_convert, value)| (key_to_convert.into_registered_name(), value))
         .collect()
 }

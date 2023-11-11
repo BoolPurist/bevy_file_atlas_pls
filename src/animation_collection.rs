@@ -93,14 +93,17 @@ impl<'a> AnimationCollectionBuilder<'a> {
         key: impl Into<TextLike<'a>>,
         row: AnimationIndex,
         time: AnimationDuration,
+        infinite: bool,
     ) -> Self {
-        self.frames = self.frames.add_row_ani(key, row, time, &self.meta);
+        self.frames = self
+            .frames
+            .add_row_ani(key, row, time, &self.meta, infinite);
         self
     }
     pub fn build(self, start_state: impl Into<TextLike<'a>>) -> AnimationCollection {
         AnimationCollection {
             meta: self.meta,
-            start_state: start_state.into().to_registered_name(),
+            start_state: start_state.into().into_registered_name(),
             frames: self.frames.build(),
         }
     }
@@ -120,8 +123,10 @@ impl<'a> AnimationSequenceBuilder<'a> {
         row: AnimationIndex,
         time: AnimationDuration,
         meta: &AnimationAltlas,
+        infinite: bool,
     ) -> Self {
-        let animation_frames = AnimationFrames::from_row(row, time, meta.data().columns()).unwrap();
+        let animation_frames =
+            AnimationFrames::from_row(row, time, meta.data().columns(), infinite).unwrap();
         self.0.insert(key.into(), Arc::new(animation_frames));
         self
     }

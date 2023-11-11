@@ -34,7 +34,7 @@ impl AllAnimationResource {
         self.animation_sequence(key)
             .frames()
             .iter()
-            .map(|frame| frame.0.as_ref())
+            .map(|frame| *frame.0)
     }
     pub fn animation_sequence(&self, key: &str) -> &AnimationCollection {
         self.animation_seqs.get(key).unwrap()
@@ -46,7 +46,7 @@ impl AllAnimationResource {
         collection: AnimationCollection,
     ) -> &mut Self {
         self.animation_seqs
-            .insert(key.into().to_registered_name(), collection);
+            .insert(key.into().into_registered_name(), collection);
         self
     }
 
@@ -99,13 +99,13 @@ impl AllAnimationResource {
                 _ => {
                     return Err(AnimationError::NoSeqeunceKeyProvided);
                 }
-            }
-            .into();
-            key.to_registered_name()
+            };
+            key.into_registered_name()
         };
 
         self.inner_add_from_asset(static_key, animations_loaded.clone(), image, asset_atlases)?;
         self.handle_to_key.insert(animations.id(), static_key);
+
         Ok(self)
     }
 
@@ -127,7 +127,7 @@ impl AllAnimationResource {
                 to_change.set_frames(new_seq);
                 Ok(self)
             }
-            None => return Ok(self),
+            None => Ok(self),
         }
     }
 
@@ -167,6 +167,11 @@ impl std::fmt::Display for AllAnimationResource {
 
             writeln!(f, "{}", utils::indent_succive(&seq.to_string(), 2))?;
         }
+        writeln!(
+            f,
+            "Default animation duration secs: {}",
+            self.global_animation_duration
+        )?;
         #[cfg(feature = "assets")]
         {
             writeln!(f, "The following sequences are backed behind a reference\n")?;

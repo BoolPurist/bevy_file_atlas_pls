@@ -25,14 +25,14 @@ fn main() {
 }
 
 fn change_state_on_input(
-    mut query: Query<(&mut AnimationComp, &mut Transform), With<Player>>,
+    mut query: Query<(&mut AnimationComp, &mut Transform, &mut TextureAtlasSprite), With<Player>>,
     time: Res<Time<Virtual>>,
     input: Res<Input<KeyCode>>,
 ) {
     if time.is_paused() {
         return;
     }
-    let (mut animation, mut location) = query.single_mut();
+    let (mut animation, mut location, mut sprite) = query.single_mut();
     let mut direction = Vec2::ZERO;
     if input.pressed(KeyCode::A) {
         direction.x -= 1.;
@@ -48,9 +48,11 @@ fn change_state_on_input(
     }
     let movement = direction * time.delta_seconds() * PLAYER_SPEED;
     if direction.x > 0. {
-        animation.change_state(AniStates::Right.to_str());
+        animation.change_state(AniStates::Left.to_str());
+        sprite.flip_x = true;
     } else if direction.x < 0. {
         animation.change_state(AniStates::Left.to_str());
+        sprite.flip_x = false;
     } else if direction.y > 0. {
         animation.change_state(AniStates::Top.to_str());
     } else {

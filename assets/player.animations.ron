@@ -9,6 +9,7 @@
             start_row: 1,
             // Can override duration for a singel animation by:
             // time_secs: Some(1)
+            infinite: false,
         ),
         (
             name: "Right",

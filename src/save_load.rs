@@ -18,6 +18,12 @@ pub struct FramesSerde {
     end_row: Option<usize>,
     end_column: Option<usize>,
     time_secs: Option<f32>,
+    #[serde(default = "true_default")]
+    infinite: bool,
+}
+
+fn true_default() -> bool {
+    true
 }
 
 impl FramesSerde {
@@ -51,6 +57,7 @@ impl FramesSerde {
             self.end_column,
             time_secs,
             columns,
+            self.infinite,
         )?)
     }
 }
@@ -76,7 +83,7 @@ impl AnimationAssets {
         let mut collection = AnimationCollectionBuilder::new(meta);
         for (name, frames) in self.frames.iter().map(|to_split| {
             (
-                TextLike::from(to_split.clone_name()).to_registered_name(),
+                TextLike::from(to_split.clone_name()).into_registered_name(),
                 to_split.to_animation_frames(self, default_ani_duration),
             )
         }) {
@@ -93,7 +100,7 @@ impl AnimationAssets {
         let mut seq = AnimationSequenceBuilder::default();
         for (name, frames) in self.frames.iter().map(|to_split| {
             (
-                TextLike::from(to_split.clone_name()).to_registered_name(),
+                TextLike::from(to_split.clone_name()).into_registered_name(),
                 to_split.to_animation_frames(self, default_ani_duration),
             )
         }) {

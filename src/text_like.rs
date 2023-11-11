@@ -16,13 +16,13 @@ impl<'a> std::fmt::Display for TextLike<'a> {
 }
 
 impl<'a> TextLike<'a> {
-    pub(crate) fn to_registered_name(self) -> &'static str {
+    pub(crate) fn into_registered_name(self) -> &'static str {
         register_text_as_key(self)
     }
     pub fn as_str(&self) -> &str {
         match self {
-            TextLike::Static(static_ref) => *static_ref,
-            TextLike::Ref(reference) => *reference,
+            TextLike::Static(static_ref) => static_ref,
+            TextLike::Ref(reference) => reference,
             TextLike::Owned(owned) => owned.as_str(),
         }
     }

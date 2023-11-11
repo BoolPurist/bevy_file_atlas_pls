@@ -15,9 +15,9 @@ use bevy_inspector_egui::prelude::*;
 )]
 pub struct PosScaleFactor(pub f32);
 
-impl Into<f32> for PosScaleFactor {
-    fn into(self) -> f32 {
-        self.to_f32()
+impl From<PosScaleFactor> for f32 {
+    fn from(value: PosScaleFactor) -> Self {
+        value.to_f32()
     }
 }
 
@@ -58,7 +58,7 @@ impl std::ops::Sub for PosScaleFactor {
 
 impl std::ops::SubAssign for PosScaleFactor {
     fn sub_assign(&mut self, rhs: Self) {
-        *self = self.clone() - rhs;
+        *self = *self - rhs;
     }
 }
 
