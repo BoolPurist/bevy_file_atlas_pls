@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 
-use crate::types::AnimationReference;
+use crate::{types::AnimationReference, PercentScaleFactor};
 
 #[derive(Event, Debug)]
 pub struct AnimationEnded {
     pub who: Entity,
-    pub progress: AnimationProgress,
+    pub progress: PercentScaleFactor,
     pub state: AnimationReference,
 }
 
@@ -13,31 +13,15 @@ impl AnimationEnded {
     pub fn new_complete(who: Entity, state: AnimationReference) -> Self {
         Self {
             who,
-            progress: AnimationProgress(1.),
+            progress: PercentScaleFactor::new_as_complete(),
             state,
         }
     }
     pub fn was_completed(&self) -> bool {
-        self.progress.was_completed()
+        self.progress.is_complete()
     }
 
     pub fn progress(&self) -> f32 {
-        self.progress.progress()
-    }
-}
-
-#[derive(Debug)]
-pub struct AnimationProgress(f32);
-
-impl AnimationProgress {
-    pub fn new(progress: f32) -> Self {
-        Self(progress.max(1.))
-    }
-    pub fn was_completed(&self) -> bool {
-        self.0 >= 1.
-    }
-
-    pub fn progress(&self) -> f32 {
-        self.0
+        self.progress.to_f32()
     }
 }

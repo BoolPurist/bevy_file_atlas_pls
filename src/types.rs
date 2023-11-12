@@ -9,8 +9,8 @@ use crate::{
     text_like::TextLike,
 };
 
-/// Most of the time it is Borrowed 'static.
-/// Only if user changes the keys of the component via bevy inspector
+/// Most of the time it is borrowed 'static.
+/// Only if the user changes the keys of the component via bevy inspector
 /// then it will be a heap allocated String.
 pub(crate) type AnimationReference = Cow<'static, str>;
 pub type AnimationFrameResult = Result<AnimationFrames, AnimationFrameError>;

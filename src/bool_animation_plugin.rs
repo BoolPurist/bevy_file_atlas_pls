@@ -5,7 +5,8 @@ use crate::{
     listen_animation_end::ListenAnimationEnd,
     prelude::AnimationComp,
     systems::{animate, apply_pending_states, do_pending_resets},
-    AnimationEnded, AnimationPrecentProgress, AnimationTimeScale, PosScaleFactor,
+    AnimationEnded, AnimationPrecentProgress, AnimationTimeScale, PercentScaleFactor,
+    PosScaleFactor,
 };
 
 #[cfg(feature = "assets")]
@@ -31,6 +32,7 @@ impl Plugin for BoolAnimationPlugin {
             .register_type::<AnimationTimeScale>()
             .register_type::<AnimationComp>()
             .register_type::<PosScaleFactor>()
+            .register_type::<PercentScaleFactor>()
             .register_type::<AnimationPrecentProgress>()
             .register_type::<ListenAnimationEnd>()
             .add_event::<AnimationEnded>()

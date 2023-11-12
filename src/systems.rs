@@ -10,7 +10,7 @@ use crate::{
     listen_animation_end::ListenAnimationEnd,
     prelude::AllAnimationResource,
     types::AnimationResult,
-    utils, AnimationEnded, AnimationPrecentProgress, PosScaleFactor,
+    utils, AnimationEnded, AnimationPrecentProgress, PercentScaleFactor,
 };
 
 #[allow(clippy::type_complexity)]
@@ -188,11 +188,12 @@ pub fn apply_pending_states(
     ) -> AnimationResult {
         if let Some(new) = animator.next_state.take() {
             if let Some(to_reset) = progress {
-                to_reset.progress = PosScaleFactor::zero();
+                to_reset.progress = PercentScaleFactor::zero();
             }
             if listen_animation_end {
-                let progress = utils::get_progress_of_animation(animator, respo, to_adjust)?;
+                let current_animation = animator.get_current_seq(respo)?;
                 let state = animator.current_state.clone();
+                let progress = current_animation.precent(to_adjust.index);
                 on_change.push(AnimationEnded {
                     who,
                     state,

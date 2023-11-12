@@ -2,7 +2,7 @@ use bevy::{prelude::Component, reflect::Reflect};
 #[cfg(feature = "bevy_inspect")]
 use bevy_inspector_egui::prelude::*;
 
-use crate::PosScaleFactor;
+use crate::PercentScaleFactor;
 
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Reflect, Component)]
 #[cfg_attr(
@@ -11,21 +11,21 @@ use crate::PosScaleFactor;
     reflect(InspectorOptions)
 )]
 pub struct AnimationPrecentProgress {
-    pub progress: PosScaleFactor,
+    pub progress: PercentScaleFactor,
     pub manual: bool,
 }
 
 impl Default for AnimationPrecentProgress {
     fn default() -> Self {
         Self {
-            progress: PosScaleFactor::zero(),
+            progress: PercentScaleFactor::zero(),
             manual: false,
         }
     }
 }
 
 impl AnimationPrecentProgress {
-    pub fn value(&self) -> PosScaleFactor {
+    pub fn value(&self) -> PercentScaleFactor {
         self.progress
     }
 }

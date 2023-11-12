@@ -36,41 +36,27 @@ impl PosScaleFactor {
     }
     /// Tries to convert `value` as [`f32`] to a valid [`PosScaleFactor`] value.
     /// # Errors
-    /// Returns an error if:
-    ///
-    /// - `value` is negative.
-    /// - `value` is greater than 1
-    pub fn new(value: f32) -> Result<Self, InvalidScaleValue> {
+    /// Returns an error if the `value` is negative.
+    pub fn new(value: f32) -> Result<Self, InvalidPosScaleValue> {
         if value < 0. {
-            Err(InvalidScaleValue::Negative(value))
-        } else if value > 1. {
-            Err(InvalidScaleValue::OverOne(value))
+            Err(InvalidPosScaleValue(value))
         } else {
             Ok(Self(value))
         }
     }
     /// Tries to convert `value` as [`f32`] to a valid [`PosScaleFactor`] value.
     /// If `value` is negative then it is rounded up to zero.
-    ///
-    /// # Errors
-    /// Returns an error if:
-    ///
-    /// - `value` is greater than 1
-    pub fn at_least_zero(value: f32) -> Result<Self, InvalidScaleValue> {
+    pub fn at_least_zero(value: f32) -> Self {
         if value < 0. {
-            Ok(Self(0.))
+            Self(0.)
         } else {
-            Self::new(value)
+            Self(value)
         }
     }
     /// Converts `value` as [`f32`] to a valid [`PosScaleFactor`] value.
     /// If `value` is negative then it is rounded up to zero.
-    /// If `value` is greater than 1 then it is rounded capped at 1.
     pub fn clamp(value: f32) -> Self {
-        Self::new(value).unwrap_or_else(|error| match error {
-            InvalidScaleValue::Negative(_) => Self(0.),
-            InvalidScaleValue::OverOne(_) => Self(1.),
-        })
+        Self::new(value).unwrap_or(Self(0.))
     }
     /// Returns scale at 1 as the maximum.
     pub fn new_as_complete() -> Self {
@@ -99,9 +85,5 @@ impl std::ops::SubAssign for PosScaleFactor {
 #[derive(Debug, Error)]
 /// Represents an invalid value for a positive scale value.
 /// An invalid positive scale value is not between 0 and 1.
-pub enum InvalidScaleValue {
-    #[error("Value {0} should not be negative")]
-    Negative(f32),
-    #[error("Value {0} should not be over 1")]
-    OverOne(f32),
-}
+#[error("Value {0} should not be negative")]
+pub struct InvalidPosScaleValue(f32);
