@@ -108,6 +108,12 @@ impl AnimationFrames {
         PosScaleFactor::new(precentage).unwrap()
     }
 
+    pub fn index_from_precent(&self, precent: PosScaleFactor) -> usize {
+        let gap = self.end - self.start;
+        let index = (gap as f32 * precent.to_f32()).round();
+        self.start + index as usize
+    }
+
     pub fn end(&self) -> usize {
         self.end
     }

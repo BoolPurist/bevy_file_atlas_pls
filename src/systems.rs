@@ -5,6 +5,7 @@ pub mod asset_handling;
 
 use crate::{
     animation_comp::{get_animation_seq, new_reapting_time, AnimationComp},
+    animation_frames::AnimationFrames,
     animation_time_factor::AnimationTimeScale,
     listen_animation_end::ListenAnimationEnd,
     prelude::AllAnimationResource,
@@ -47,16 +48,69 @@ pub fn animate(
         mut on_animation_finish: EventWriter<AnimationEnded>,
     ) -> AnimationResult {
         let mut animations_finished: Vec<AnimationEnded> = Vec::new();
-        for (who, mut animator, mut current_sprite, time_scale, progress, listen_end) in
+        for (who, mut animator, mut current_sprite, time_scale, mut progress, listen_end) in
             query.iter_mut()
         {
+            let current_animation = animator.get_current_seq(repos)?;
+            match progress.as_deref_mut() {
+                Some(AnimationPrecentProgress {
+                    manual: true,
+                    progress,
+                }) => {
+                    let new_index = current_animation.index_from_precent(*progress);
+                    current_sprite.index = new_index;
+                }
+                Some(AnimationPrecentProgress {
+                    manual: false,
+                    progress,
+                }) => {
+                    update_over_time(
+                        who,
+                        &mut animator,
+                        &mut current_sprite,
+                        time,
+                        &current_animation,
+                        time_scale,
+                        &mut animations_finished,
+                        listen_end,
+                    );
+                    *progress = current_animation.precent(current_sprite.index);
+                }
+                None => update_over_time(
+                    who,
+                    &mut animator,
+                    &mut current_sprite,
+                    time,
+                    &current_animation,
+                    time_scale,
+                    &mut animations_finished,
+                    listen_end,
+                ),
+            }
+        }
+
+        if !animations_finished.is_empty() {
+            on_animation_finish.send_batch(animations_finished);
+        }
+        return Ok(());
+
+        #[allow(clippy::too_many_arguments)]
+        fn update_over_time(
+            who: Entity,
+            animator: &mut AnimationComp,
+            current_sprite: &mut TextureAtlasSprite,
+            time: &Time<Virtual>,
+            current_animation: &AnimationFrames,
+            time_scale: &AnimationTimeScale,
+            animations_finished: &mut Vec<AnimationEnded>,
+            listen_end: bool,
+        ) {
             if animator.has_reached_end_without_repeat {
-                continue;
+                return;
             }
 
             let scaled_time = time_scale.scale_duration(time.delta());
 
-            let current_animation = animator.get_current_seq(repos)?;
             if animator
                 .duration_for_animation
                 .tick(scaled_time)
@@ -88,15 +142,7 @@ pub fn animate(
                     };
                 }
             }
-            if let Some(mut to_update) = progress {
-                to_update.0 = current_animation.precent(current_sprite.index);
-            }
         }
-
-        if !animations_finished.is_empty() {
-            on_animation_finish.send_batch(animations_finished);
-        }
-        Ok(())
     }
 }
 
@@ -142,7 +188,7 @@ pub fn apply_pending_states(
     ) -> AnimationResult {
         if let Some(new) = animator.next_state.take() {
             if let Some(to_reset) = progress {
-                to_reset.0 = PosScaleFactor::zero();
+                to_reset.progress = PosScaleFactor::zero();
             }
             if listen_animation_end {
                 let progress = utils::get_progress_of_animation(animator, respo, to_adjust)?;

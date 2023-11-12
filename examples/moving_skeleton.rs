@@ -285,7 +285,7 @@ pub struct TimeScaleIncrement(pub PosScaleFactor);
 
 impl Default for TimeScaleIncrement {
     fn default() -> Self {
-        Self(PosScaleFactor::at_least_zero(0.1))
+        Self(PosScaleFactor::clamp(0.1))
     }
 }
 

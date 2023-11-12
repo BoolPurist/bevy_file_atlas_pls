@@ -33,17 +33,25 @@ impl PosScaleFactor {
     }
     pub fn new(value: f32) -> Result<Self, NegativeValueError> {
         if value < 0. {
-            Err(NegativeValueError(value))
+            Err(NegativeValueError::Negative(value))
+        } else if value > 1. {
+            Err(NegativeValueError::OverOne(value))
         } else {
             Ok(Self(value))
         }
     }
-    pub fn at_least_zero(value: f32) -> Self {
+    pub fn at_least_zero(value: f32) -> Result<Self, NegativeValueError> {
         if value < 0. {
-            Self(0.)
+            Ok(Self(0.))
         } else {
-            Self(value)
+            Self::new(value)
         }
+    }
+    pub fn clamp(value: f32) -> Self {
+        Self::new(value).unwrap_or_else(|error| match error {
+            NegativeValueError::Negative(_) => Self(0.),
+            NegativeValueError::OverOne(_) => Self(1.),
+        })
     }
     pub fn new_as_complete() -> Self {
         Self(1.0)
@@ -58,7 +66,7 @@ impl std::ops::Sub for PosScaleFactor {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        Self::at_least_zero(self.0 - rhs.0)
+        Self::clamp(self.0 - rhs.0)
     }
 }
 
@@ -69,5 +77,9 @@ impl std::ops::SubAssign for PosScaleFactor {
 }
 
 #[derive(Debug, Error)]
-#[error("Value {0} should not be negative")]
-pub struct NegativeValueError(f32);
+pub enum NegativeValueError {
+    #[error("Value {0} should not be negative")]
+    Negative(f32),
+    #[error("Value {0} should not be over 1")]
+    OverOne(f32),
+}

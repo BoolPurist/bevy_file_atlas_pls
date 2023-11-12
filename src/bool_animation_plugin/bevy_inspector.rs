@@ -39,7 +39,7 @@ mod pos_scale_factor {
                 .add(egui::DragValue::new(&mut number).speed(0.1))
                 .changed();
             if has_changed {
-                *value = PosScaleFactor::at_least_zero(number);
+                *value = PosScaleFactor::clamp(number);
             }
         });
         has_changed
