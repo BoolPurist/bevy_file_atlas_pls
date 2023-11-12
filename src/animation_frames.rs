@@ -3,7 +3,7 @@ use bevy::reflect::Reflect;
 use crate::{
     animation_error::AnimationFrameError,
     types::{AnimationDuration, AnimationFrameResult, AnimationIndex},
-    utils,
+    utils, PosScaleFactor,
 };
 
 #[derive(Debug, Clone, Reflect)]
@@ -91,6 +91,21 @@ impl AnimationFrames {
         let time_secs = self.time().as_secs_f32();
         let secs = time_secs / self.frame_gap() as f32;
         AnimationDuration::from_secs_f32(secs)
+    }
+    pub fn precent(&self, index: usize) -> PosScaleFactor {
+        if index < self.start {
+            return PosScaleFactor::default();
+        }
+        if index > self.end {
+            return PosScaleFactor::new_as_complete();
+        }
+
+        let relative_start = index - self.start;
+        let relative_end = self.end - self.start;
+
+        let precentage = (relative_start as f32) / (relative_end as f32);
+
+        PosScaleFactor::new(precentage).unwrap()
     }
 
     pub fn end(&self) -> usize {

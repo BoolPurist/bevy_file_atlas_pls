@@ -9,15 +9,17 @@ use crate::{
     listen_animation_end::ListenAnimationEnd,
     prelude::AllAnimationResource,
     types::AnimationResult,
-    utils, AnimationEnded,
+    utils, AnimationEnded, AnimationPrecentProgress, PosScaleFactor,
 };
 
+#[allow(clippy::type_complexity)]
 pub fn animate(
     query: Query<(
         Entity,
         &mut AnimationComp,
         &mut TextureAtlasSprite,
         &AnimationTimeScale,
+        Option<&mut AnimationPrecentProgress>,
         Has<ListenAnimationEnd>,
     )>,
     time: Res<Time<Virtual>>,
@@ -37,6 +39,7 @@ pub fn animate(
             &mut AnimationComp,
             &mut TextureAtlasSprite,
             &AnimationTimeScale,
+            Option<&mut AnimationPrecentProgress>,
             Has<ListenAnimationEnd>,
         )>,
         time: &Time<Virtual>,
@@ -44,25 +47,25 @@ pub fn animate(
         mut on_animation_finish: EventWriter<AnimationEnded>,
     ) -> AnimationResult {
         let mut animations_finished: Vec<AnimationEnded> = Vec::new();
-        for (who, mut animator, mut current_sprite, time_scale, listen_end) in query.iter_mut() {
+        for (who, mut animator, mut current_sprite, time_scale, progress, listen_end) in
+            query.iter_mut()
+        {
             if animator.has_reached_end_without_repeat {
                 continue;
             }
 
             let scaled_time = time_scale.scale_duration(time.delta());
 
+            let current_animation = animator.get_current_seq(repos)?;
             if animator
                 .duration_for_animation
                 .tick(scaled_time)
                 .just_finished()
             {
-                let current_animation = animator.get_current_seq(repos)?;
                 let last_frame_has_ended = current_animation.end() == current_sprite.index;
                 let report_end_of_last_frame = listen_end && last_frame_has_ended;
                 let has_reached_end_without_repeat =
                     last_frame_has_ended && !current_animation.is_infinite();
-                dbg!(current_animation.is_infinite());
-                dbg!(has_reached_end_without_repeat);
 
                 if report_end_of_last_frame {
                     animations_finished.push(AnimationEnded::new_complete(
@@ -85,7 +88,11 @@ pub fn animate(
                     };
                 }
             }
+            if let Some(mut to_update) = progress {
+                to_update.0 = current_animation.precent(current_sprite.index);
+            }
         }
+
         if !animations_finished.is_empty() {
             on_animation_finish.send_batch(animations_finished);
         }
@@ -93,23 +100,26 @@ pub fn animate(
     }
 }
 
+#[allow(clippy::type_complexity)]
 pub fn apply_pending_states(
     mut query: Query<(
         Entity,
         &mut AnimationComp,
         &mut TextureAtlasSprite,
+        Option<&mut AnimationPrecentProgress>,
         Has<ListenAnimationEnd>,
     )>,
     repos: Res<AllAnimationResource>,
     mut on_animation_switch: EventWriter<AnimationEnded>,
 ) {
-    for (who, mut animmator, mut texture_sprite, listen_ani_end) in query.iter_mut() {
+    for (who, mut animmator, mut texture_sprite, mut progress, listen_ani_end) in query.iter_mut() {
         let mut animations_finished: Vec<AnimationEnded> = Vec::new();
         utils::log_if_error(
             try_apply_state_change(
                 who,
                 &mut animmator,
                 &mut texture_sprite,
+                progress.as_deref_mut(),
                 listen_ani_end,
                 &repos,
                 &mut animations_finished,
@@ -125,11 +135,15 @@ pub fn apply_pending_states(
         who: Entity,
         animator: &mut AnimationComp,
         to_adjust: &mut TextureAtlasSprite,
+        progress: Option<&mut AnimationPrecentProgress>,
         listen_animation_end: bool,
         respo: &AllAnimationResource,
         on_change: &mut Vec<AnimationEnded>,
     ) -> AnimationResult {
         if let Some(new) = animator.next_state.take() {
+            if let Some(to_reset) = progress {
+                to_reset.0 = PosScaleFactor::zero();
+            }
             if listen_animation_end {
                 let progress = utils::get_progress_of_animation(animator, respo, to_adjust)?;
                 let state = animator.current_state.clone();

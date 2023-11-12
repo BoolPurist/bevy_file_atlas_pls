@@ -28,6 +28,9 @@ impl Default for PosScaleFactor {
 }
 
 impl PosScaleFactor {
+    pub fn zero() -> Self {
+        Self(0.0)
+    }
     pub fn new(value: f32) -> Result<Self, NegativeValueError> {
         if value < 0. {
             Err(NegativeValueError(value))
@@ -41,6 +44,9 @@ impl PosScaleFactor {
         } else {
             Self(value)
         }
+    }
+    pub fn new_as_complete() -> Self {
+        Self(1.0)
     }
 
     pub fn to_f32(self) -> f32 {

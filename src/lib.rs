@@ -9,6 +9,8 @@ pub mod bool_animation_plugin;
 pub mod pos_scale_factor;
 pub mod prelude;
 
+mod animation_precent_progress;
+pub use animation_precent_progress::AnimationPrecentProgress;
 #[cfg(feature = "assets")]
 pub mod save_load;
 
