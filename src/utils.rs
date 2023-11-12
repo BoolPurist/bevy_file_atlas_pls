@@ -3,10 +3,9 @@ use std::error::Error;
 
 use crate::{
     animation_ended::AnimationProgress,
-    animation_error::NegativeAnimationTime,
     animation_respo_resource::AllAnimationResource,
     prelude::AnimationComp,
-    types::{AnimationDuration, AnimationIndex, KeyLookUpResult},
+    types::{AnimationIndex, KeyLookUpResult},
 };
 
 pub fn index_from_row_column(
@@ -24,14 +23,6 @@ where
     if let Err(error) = result {
         error!("{}", message);
         error!("Reason: {}", error);
-    }
-}
-
-pub fn f32_to_animation_duration(time: f32) -> Result<AnimationDuration, NegativeAnimationTime> {
-    if time < 0. {
-        Err(NegativeAnimationTime(time))
-    } else {
-        Ok(bevy::utils::Duration::from_secs_f32(time))
     }
 }
 

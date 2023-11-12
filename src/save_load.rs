@@ -3,11 +3,12 @@ use serde::Deserialize;
 
 use crate::{
     animation_collection::{AnimationCollection, AnimationSequenceBuilder},
+    animation_error::NegativeAnimationTime,
     animation_frames::AnimationFrames,
     prelude::{AnimationAltlasMeta, AnimationCollectionBuilder, AnimationIndex, AnimationSequence},
     text_like::TextLike,
-    types::AnimationResult,
-    utils, PosScaleFactor,
+    types::{AnimationDuration, AnimationResult},
+    PosScaleFactor,
 };
 
 #[derive(Deserialize, Clone, Debug)]
@@ -46,7 +47,7 @@ impl FramesSerde {
                     .time()
                     .unwrap_or(default_ani_duration.to_f32()),
             );
-            utils::f32_to_animation_duration(raw)
+            f32_to_animation_duration(raw)
         }?;
 
         let columns = sequence_meta.columns();
@@ -123,5 +124,13 @@ impl AnimationAssets {
 
     pub fn time(&self) -> Option<f32> {
         self.time_secs
+    }
+}
+
+pub fn f32_to_animation_duration(time: f32) -> Result<AnimationDuration, NegativeAnimationTime> {
+    if time < 0. {
+        Err(NegativeAnimationTime(time))
+    } else {
+        Ok(bevy::utils::Duration::from_secs_f32(time))
     }
 }

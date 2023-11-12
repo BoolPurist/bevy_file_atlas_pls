@@ -2,8 +2,6 @@ use bevy::prelude::*;
 use bevy::text::TextStyle;
 use bevy::utils::petgraph::matrix_graph::Zero;
 use bevy::window::PrimaryWindow;
-use bevy_file_atlas_pls::animation_ended::AnimationProgress;
-use bevy_file_atlas_pls::listen_animation_end::ListenAnimationEnd;
 use bevy_file_atlas_pls::AnimationPrecentProgress;
 use bevy_inspector_egui::bevy_egui::EguiContext;
 use bevy_inspector_egui::egui::Ui;
